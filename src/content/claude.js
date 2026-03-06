@@ -165,7 +165,7 @@
       }
 
       if (response && response.type === 'INJECT_PROMPT') {
-        const { prompt, enableResearch, promptEntry } = response;
+        const { prompt, enableResearch, promptEntry, source } = response;
         chrome.storage.sync.get(
           { promptEntry: 'auto-submit' },
           (settings) => {
@@ -173,7 +173,7 @@
             const effectiveSettings = { ...settings };
             if (promptEntry) effectiveSettings.promptEntry = promptEntry;
             injectPrompt(prompt, effectiveSettings, { enableResearch });
-            watchForAsanaActions();
+            if (source === 'gmail') watchForAsanaActions();
           }
         );
       }

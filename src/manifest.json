@@ -13,7 +13,12 @@
   "content_scripts": [
     {
       "matches": ["https://mail.google.com/*"],
-      "js": ["content/gmail.js"],
+      "js": ["content/shared.js", "content/gmail.js"],
+      "css": ["content/gmail.css"]
+    },
+    {
+      "matches": ["https://app.asana.com/*"],
+      "js": ["content/shared.js", "content/asana.js"],
       "css": ["content/gmail.css"]
     },
     {

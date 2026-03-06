@@ -150,8 +150,8 @@ Email details:
 
     const textarea = modal.querySelector('#precog-prompt-editor');
     textarea.focus();
-    // Move cursor to end
-    textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+    // Move cursor to beginning
+    textarea.selectionStart = textarea.selectionEnd = 0;
 
     modal.querySelector('#precog-send-btn').addEventListener('click', () => {
       sendPrompt(textarea.value);

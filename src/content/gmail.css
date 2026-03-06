@@ -85,9 +85,10 @@
 
 /* Editor mode */
 #precog-modal.precog-editor-mode {
-  width: 60vw;
-  max-width: 800px;
-  max-height: 80vh;
+  width: 90vw;
+  max-width: 90vw;
+  height: 90vh;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
 }

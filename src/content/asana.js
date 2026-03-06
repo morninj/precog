@@ -74,9 +74,10 @@ console.log('[Precog] Asana content script loaded');
 
   initPrecog({
     source: 'asana',
+    canActivate: () => !!document.querySelector('.ProsemirrorEditor.TextEditor3-prosemirrorEditor'),
     extractData: extractAsanaData,
     buildContext: buildAsanaContext,
-    availableBlockIds: ['summarize', 'identify_todos', 'recommend', 'deep_context', 'draft_reply', 'deep_research'],
+    availableBlockIds: ['summarize', 'identify_todos', 'recommend', 'deep_context', 'draft_email', 'deep_research'],
     defaultBlockIds: ['summarize', 'identify_todos', 'recommend'],
     noDataMessage: '[Precog] Open a task first — no task data found on this page.',
   });

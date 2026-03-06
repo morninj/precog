@@ -53,6 +53,12 @@ const ALL_BLOCKS = [
     defaultTemplate: 'Draft a reply that addresses the key points and any open questions. Match the tone and formality of the original message.',
   },
   {
+    id: 'draft_email',
+    label: 'Draft an email',
+    desc: 'Draft an email to the appropriate recipients',
+    defaultTemplate: 'Based on the task description, draft an email to the appropriate recipients. Identify the right people to contact from the context, address the key points, and include any necessary details or attachments mentioned in the task.',
+  },
+  {
     id: 'deep_research',
     label: 'Do deep research',
     desc: 'Use Claude\'s research mode for thorough investigation',
@@ -274,7 +280,7 @@ function initPrecog(config) {
       e.stopPropagation();
       if (overlayEl) {
         hideOverlay();
-      } else {
+      } else if (!config.canActivate || config.canActivate()) {
         showOverlay();
       }
     }

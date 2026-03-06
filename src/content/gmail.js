@@ -52,11 +52,22 @@
       .map((el) => el.getAttribute('data-legacy-message-id'))
       .filter(Boolean);
 
+    // Extract linked Asana task GIDs from the email body
+    const linkedAsanaTaskGids = [];
+    const asanaGidsSeen = new Set();
+    document.querySelectorAll('.a3s.aiL a[href*="app.asana.com"]').forEach((link) => {
+      const match = link.href.match(/\/task\/(\d+)/);
+      if (match && !asanaGidsSeen.has(match[1])) {
+        asanaGidsSeen.add(match[1]);
+        linkedAsanaTaskGids.push(match[1]);
+      }
+    });
+
     const url = window.location.href;
 
     if (!subject && !body) return null;
 
-    return { subject, sender, date, body, url, warning, threadId, messageIds, legacyMessageIds };
+    return { subject, sender, date, body, url, warning, threadId, messageIds, legacyMessageIds, linkedAsanaTaskGids };
   }
 
   function buildEmailContext(emailData, settings) {
@@ -84,6 +95,14 @@
     }
 
     details.push('- Body:', data.body);
+
+    if (data.linkedAsanaTaskGids.length > 0) {
+      details.push('');
+      details.push('Related Asana tasks found in email (use these GIDs to read the tasks via the Asana connector):');
+      data.linkedAsanaTaskGids.forEach((gid) => {
+        details.push(`- Asana task GID: ${gid}`);
+      });
+    }
 
     return {
       preamble: 'Based on the following email, please complete the requirements listed below.',

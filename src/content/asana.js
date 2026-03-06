@@ -43,6 +43,24 @@ console.log('[Precog] Asana content script loaded');
     return result;
   }
 
+  function extractTaskGid() {
+    const match = window.location.href.match(/\/task\/(\d+)/);
+    return match ? match[1] : '';
+  }
+
+  function extractGmailLinks(el) {
+    if (!el) return [];
+    const links = el.querySelectorAll('a[href*="mail.google.com"]');
+    const threads = new Set();
+    for (const link of links) {
+      // Gmail URLs look like: https://mail.google.com/mail/u/0/#starred/FMfcgz...
+      // The thread ID is the last path segment after the hash
+      const match = link.href.match(/#[^/]+\/([A-Za-z0-9]+)$/);
+      if (match) threads.add(match[1]);
+    }
+    return Array.from(threads);
+  }
+
   function extractAsanaData() {
     const titleEl = document.querySelector('textarea[aria-label="Task Name"]');
     const title = titleEl?.value?.trim() || '';
@@ -51,10 +69,12 @@ console.log('[Precog] Asana content script loaded');
     const description = prosemirrorToMarkdown(descriptionEl);
 
     const url = window.location.href;
+    const taskGid = extractTaskGid();
+    const linkedGmailThreads = extractGmailLinks(descriptionEl);
 
     if (!title && !description) return null;
 
-    return { title, description, url };
+    return { title, description, url, taskGid, linkedGmailThreads };
   }
 
   function buildAsanaContext(data) {
@@ -62,13 +82,25 @@ console.log('[Precog] Asana content script loaded');
       'Asana task details:',
       `- Title: ${data.title}`,
       `- Link: ${data.url}`,
-      '- Description:',
-      data.description,
-    ].join('\n');
+    ];
+
+    if (data.taskGid) {
+      details.push(`- Asana task GID: ${data.taskGid}`);
+    }
+
+    details.push('- Description:', data.description);
+
+    if (data.linkedGmailThreads.length > 0) {
+      details.push('');
+      details.push('Related Gmail threads found in description (use these IDs to read the threads via the Gmail connector):');
+      data.linkedGmailThreads.forEach((id) => {
+        details.push(`- Gmail thread: ${id}`);
+      });
+    }
 
     return {
       preamble: 'Based on the following Asana task, please complete the requirements listed below.',
-      details,
+      details: details.join('\n'),
     };
   }
 

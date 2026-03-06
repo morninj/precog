@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Precog",
-  "version": "0.1.0.2",
+  "version": "0.1.0.4",
   "description": "Automate tasks across Gmail, Claude, Drive, and Asana",
   "permissions": [
     "activeTab",
@@ -9,6 +9,15 @@
   ],
   "background": {
     "service_worker": "background/service-worker.js"
+  },
+  "commands": {
+    "toggle-overlay": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+P",
+        "mac": "Command+Shift+P"
+      },
+      "description": "Open Precog command palette"
+    }
   },
   "content_scripts": [
     {
@@ -26,15 +35,6 @@
       "js": ["content/claude.js"]
     }
   ],
-  "commands": {
-    "toggle-overlay": {
-      "suggested_key": {
-        "default": "Ctrl+Alt+P",
-        "mac": "MacCtrl+Alt+P"
-      },
-      "description": "Open Precog command palette"
-    }
-  },
   "options_ui": {
     "page": "options/options.html",
     "open_in_tab": true

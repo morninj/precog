@@ -4,7 +4,7 @@ Precog is a Chrome extension that automates AI workflows across Google Workspace
 
 ## What it does
 
-When you're viewing an email in Gmail or a task in Asana, press **Ctrl+Opt+P** (configurable at `chrome://extensions/shortcuts`) to open a command palette. You can select from composable building blocks to construct a prompt, review and edit it, and send it to Claude. Claude then carries out the requested actions, like creating an Asana task, drafting a reply, or researching a topic.
+When you're viewing an email in Gmail or a task in Asana, press **Cmd+Shift+P** (configurable at `chrome://extensions/shortcuts`) to open a command palette. You can select from composable building blocks to construct a prompt, review and edit it, and send it to Claude. Claude then carries out the requested actions, like creating an Asana task, drafting a reply, or researching a topic.
 
 ### Building blocks
 
@@ -31,7 +31,7 @@ Precog currently supports two contexts. In **Gmail**, it extracts the subject, s
 ## Usage
 
 1. Open an email in Gmail or a task in Asana.
-2. Press **Ctrl+Opt+P** to open the command palette.
+2. Press **Cmd+Shift+P** to open the command palette.
 3. Toggle the building blocks you want to include.
 4. Click **Generate prompt** (or press Cmd+Enter).
 5. Review and edit the generated prompt.

@@ -2,7 +2,8 @@
   const BASE_REQUIREMENTS = `- Title should be in the imperative mood, like a good git commit message (e.g. "Review contract from Acme Corp", "Schedule follow-up with Sarah")
 - Assign the task to me
 - Set the due date to today ({today})
-- Include the link to the original email at the very top of the description`;
+- Include the link to the original email at the very top of the description
+- For each TODO, include a brief recommended approach with a confidence level (high/medium/low), any strategic considerations, and anticipated questions or blockers`;
 
   const EMAIL_DETAILS = `Email details:
 - Subject: {subject}
@@ -16,7 +17,7 @@
 
 Requirements:
 ${BASE_REQUIREMENTS}
-- Description should summarize the key points and list any TODO items
+- Description should summarize the key points and list any TODOs
 
 ${EMAIL_DETAILS}`;
 
@@ -28,7 +29,8 @@ ${BASE_REQUIREMENTS}
 - Search Google Drive for any related documents, spreadsheets, or files. Include links to relevant files.
 - Search Slack for any related conversations or messages. Include links to relevant threads.
 - Write a comprehensive summary that synthesizes all the context you found
-- List all TODO items and next steps
+- List all TODOs and next steps
+- For each TODO, include a brief recommended approach with a confidence level (high/medium/low), any strategic considerations, and anticipated questions or blockers
 - Include a "Sources" section at the bottom with links to all relevant emails, Drive files, and Slack messages
 
 ${EMAIL_DETAILS}`;

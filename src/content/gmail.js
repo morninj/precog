@@ -338,8 +338,7 @@
     }
 
     if (emailData.warning) {
-      alert(emailData.warning);
-      return;
+      if (!confirm(emailData.warning + '\n\nContinue anyway?')) return;
     }
 
     // Resolve block order (respect BLOCKS ordering, only include checked)

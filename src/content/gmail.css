@@ -32,55 +32,68 @@
 }
 
 #precog-modal .precog-hint {
-  margin: 0 0 24px 0;
+  margin: 0;
   font-size: 13px;
   color: #888;
 }
 
-#precog-modal .precog-actions {
+/* Block list */
+.precog-blocks {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-#precog-modal .precog-action {
+.precog-block {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 16px;
+  padding: 10px 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
 }
 
-#precog-modal .precog-action:hover,
-#precog-modal .precog-action.precog-selected {
+.precog-block:hover,
+.precog-block.precog-focused {
   background: #2a2a4a;
 }
 
-#precog-modal .precog-key {
+.precog-checkbox {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  background: #333;
-  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 2px solid #555;
+  background: transparent;
+  color: #6366f1;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   flex-shrink: 0;
+  transition: border-color 0.15s, background 0.15s;
 }
 
-#precog-modal .precog-action-label {
+.precog-checked .precog-checkbox {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.15);
+}
+
+.precog-block-label {
   font-size: 15px;
   font-weight: 500;
 }
 
-#precog-modal .precog-action-desc {
+.precog-block-desc {
   font-size: 12px;
   color: #888;
   margin-top: 2px;
+}
+
+.precog-generate-btn {
+  margin-top: 16px;
+  width: 100%;
 }
 
 /* Editor mode */
@@ -97,7 +110,6 @@
   flex: 1;
   width: 100%;
   min-height: 300px;
-  max-height: 50vh;
   padding: 14px;
   border-radius: 8px;
   border: 1px solid #333;
@@ -134,6 +146,11 @@
 
 .precog-btn-primary:hover {
   background: #5558e6;
+}
+
+.precog-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .precog-btn-secondary {

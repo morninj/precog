@@ -27,19 +27,10 @@
       <p class="hint">Controls how much of the email body is included in the prompt.</p>
     </div>
 
-    <div class="setting">
-      <label for="promptTemplate">Quick task prompt template</label>
-      <textarea id="promptTemplate" rows="12"></textarea>
-      <p class="hint">Available placeholders: {subject}, {sender}, {date}, {url}, {body}, {today}. You can edit the prompt per-use in the overlay.</p>
-      <button id="resetTemplate" class="btn-link">Reset to default</button>
-    </div>
+    <h2>Prompt building blocks</h2>
+    <p class="hint" style="margin-bottom: 16px;">Each block's template can be customized below. These are combined when you generate a prompt. Placeholder: {today}.</p>
 
-    <div class="setting">
-      <label for="deepContextTemplate">Deep context task prompt template</label>
-      <textarea id="deepContextTemplate" rows="16"></textarea>
-      <p class="hint">Same placeholders as above. This template instructs Claude to search Gmail, Drive, and Slack for related context.</p>
-      <button id="resetDeepTemplate" class="btn-link">Reset to default</button>
-    </div>
+    <div id="block-editors"></div>
 
     <div class="actions">
       <button id="save">Save</button>

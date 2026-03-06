@@ -211,14 +211,33 @@ Email details:
       ? dateEl.getAttribute('title') || dateEl.textContent?.trim() || ''
       : '';
 
-    // Get the most recently expanded message body
+    // Grab all visible/expanded message bodies
     const messageBodies = document.querySelectorAll('.a3s.aiL');
-    const lastBody = messageBodies[messageBodies.length - 1];
-    const body = lastBody ? lastBody.innerText.trim() : '';
+    const body = Array.from(messageBodies)
+      .map((el, i) => {
+        const msg = el.closest('.gs');
+        const msgSender = msg?.querySelector('.gD');
+        const msgDate = msg?.querySelector('.g3');
+        const from = msgSender
+          ? (msgSender.getAttribute('name') || msgSender.textContent || '').trim()
+          : `Message ${i + 1}`;
+        const on = msgDate
+          ? msgDate.getAttribute('title') || msgDate.textContent?.trim() || ''
+          : '';
+        const header = on ? `--- ${from} (${on}) ---` : `--- ${from} ---`;
+        return `${header}\n${el.innerText.trim()}`;
+      })
+      .join('\n\n');
+
+    // Check for collapsed messages
+    const collapsed = document.querySelectorAll('.adx[aria-expanded="false"], .kv[aria-expanded="false"]');
+    const warning = collapsed.length > 0
+      ? `\n\n⚠️ ${collapsed.length} collapsed message(s) not included. Press ; in Gmail to expand all, then try again.`
+      : '';
 
     const url = window.location.href;
 
-    return { subject, sender, date, body, url };
+    return { subject, sender, date, body, url, warning };
   }
 
   function fillTemplate(template, emailData) {
@@ -237,6 +256,7 @@ Email details:
   // --- Action Handlers ---
 
   function handleCreateAsanaTask() {
+    hideOverlay();
     const emailData = extractEmailData();
 
     if (!emailData.subject && !emailData.body) {
@@ -244,7 +264,11 @@ Email details:
       return;
     }
 
-    // Load the saved prompt template, fill it with email data, show editor
+    if (emailData.warning) {
+      alert(emailData.warning);
+      return;
+    }
+
     chrome.storage.sync.get(
       { promptTemplate: DEFAULT_PROMPT_TEMPLATE, emailDataScope: 'full' },
       (settings) => {
@@ -259,10 +283,16 @@ Email details:
   }
 
   function handleDeepContextTask() {
+    hideOverlay();
     const emailData = extractEmailData();
 
     if (!emailData.subject && !emailData.body) {
       alert('[Precog] Open an email first — no email data found on this page.');
+      return;
+    }
+
+    if (emailData.warning) {
+      alert(emailData.warning);
       return;
     }
 

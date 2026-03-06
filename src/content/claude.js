@@ -47,18 +47,39 @@
     }
   }
 
-  function watchForAsanaLinks() {
+  function watchForAsanaActions() {
+    const clicked = new Set();
     const opened = new Set();
 
     const observer = new MutationObserver(() => {
-      const links = document.querySelectorAll('a[href*="app.asana.com"]');
-      links.forEach((link) => {
+      // Click "Create task", "View in Asana", and similar action buttons
+      document.querySelectorAll('button').forEach((btn) => {
+        const text = btn.textContent.trim().toLowerCase();
+        if (
+          (text.includes('create task') ||
+            text.includes('view in asana') ||
+            text.includes('open in asana')) &&
+          !clicked.has(btn)
+        ) {
+          clicked.add(btn);
+          // Delay to ensure the button is fully rendered and functional
+          setTimeout(() => {
+            if (btn.isConnected) {
+              console.log('[Precog] Clicking button:', btn.textContent.trim());
+              btn.click();
+            }
+          }, 1000);
+        }
+      });
+
+      // Also open Asana links directly
+      document.querySelectorAll('a[href*="app.asana.com"]').forEach((link) => {
         const href = link.href;
         if (href && !opened.has(href)) {
           opened.add(href);
-          // Wait a moment to avoid opening mid-stream — check again to confirm it's stable
           setTimeout(() => {
-            if (document.querySelector(`a[href="${CSS.escape(href)}"]`)) {
+            if (link.isConnected) {
+              console.log('[Precog] Opening Asana link:', href);
               window.open(href, '_blank');
             }
           }, 2000);
@@ -81,7 +102,7 @@
           { promptEntry: 'auto-submit' },
           (settings) => {
             injectPrompt(response.prompt, settings);
-            watchForAsanaLinks();
+            watchForAsanaActions();
           }
         );
       }

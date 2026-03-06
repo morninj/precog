@@ -53,6 +53,12 @@
       desc: 'Write a draft response',
       defaultTemplate: 'Draft a reply that addresses the key points and any open questions. Match the tone and formality of the original message.',
     },
+    {
+      id: 'deep_research',
+      label: 'Deep research',
+      desc: 'Use Claude\'s research mode for thorough investigation',
+      defaultTemplate: 'Use your research capabilities to thoroughly investigate this topic before responding.',
+    },
   ];
 
 
@@ -62,23 +68,36 @@
   let overlayMode = 'blocks'; // 'blocks' or 'editor'
   let selectedIndex = 0;
   let checkedBlockIds = new Set(['asana_task', 'summarize', 'identify_todos', 'recommend']);
+  let editorOptions = {};
 
   // --- Context Builders ---
   // Each context type provides a preamble and a details section.
   // Only email for now; others (Drive, Slack, etc.) can be added later.
 
   function buildEmailContext(emailData) {
+    const details = [
+      'Email details:',
+      `- Subject: ${emailData.subject}`,
+      `- From: ${emailData.sender}`,
+      `- Date: ${emailData.date}`,
+      `- Link: ${emailData.url}`,
+    ];
+
+    if (emailData.threadId) {
+      details.push(`- Gmail thread ID: ${emailData.threadId}`);
+    }
+    if (emailData.messageIds.length > 0) {
+      details.push(`- Gmail message IDs: ${emailData.messageIds.join(', ')}`);
+    }
+    if (emailData.legacyMessageIds.length > 0) {
+      details.push(`- Gmail RFC message IDs: ${emailData.legacyMessageIds.join(', ')}`);
+    }
+
+    details.push('- Body:', emailData.body);
+
     return {
       preamble: 'Based on the following email, please complete the requirements listed below.',
-      details: [
-        'Email details:',
-        `- Subject: ${emailData.subject}`,
-        `- From: ${emailData.sender}`,
-        `- Date: ${emailData.date}`,
-        `- Link: ${emailData.url}`,
-        '- Body:',
-        emailData.body,
-      ].join('\n'),
+      details: details.join('\n'),
     };
   }
 
@@ -187,8 +206,9 @@
     }
   }
 
-  function showPromptEditor(prompt) {
+  function showPromptEditor(prompt, options = {}) {
     overlayMode = 'editor';
+    editorOptions = options;
 
     if (overlayEl) {
       overlayEl.remove();
@@ -204,12 +224,10 @@
     modal.classList.add('precog-editor-mode');
 
     modal.innerHTML = `
-      <h1>Edit prompt</h1>
-      <p class="precog-hint">Edit the prompt below &middot; &#8984;+Enter to send &middot; Esc to cancel</p>
       <textarea id="precog-prompt-editor">${escapeHtml(prompt)}</textarea>
       <div class="precog-editor-actions">
-        <button id="precog-send-btn" class="precog-btn-primary">Send to Claude &#8984;&#8629;</button>
-        <button id="precog-cancel-btn" class="precog-btn-secondary">Cancel</button>
+        <button id="precog-send-auto-btn" class="precog-btn-primary">Send to Claude &#8984;&#8629;</button>
+        <button id="precog-send-paste-btn" class="precog-btn-secondary">Send without submitting &#8984;&#8679;&#8629;</button>
       </div>
     `;
 
@@ -221,12 +239,12 @@
     textarea.focus();
     textarea.selectionStart = textarea.selectionEnd = 0;
 
-    modal.querySelector('#precog-send-btn').addEventListener('click', () => {
-      sendPrompt(textarea.value);
+    modal.querySelector('#precog-send-auto-btn').addEventListener('click', () => {
+      sendPrompt(textarea.value, { ...options, promptEntry: 'auto-submit' });
     });
 
-    modal.querySelector('#precog-cancel-btn').addEventListener('click', () => {
-      hideOverlay();
+    modal.querySelector('#precog-send-paste-btn').addEventListener('click', () => {
+      sendPrompt(textarea.value, { ...options, promptEntry: 'paste' });
     });
 
     overlayEl.addEventListener('click', (e) => {
@@ -251,8 +269,11 @@
   // --- Email Data Extraction ---
 
   function extractEmailData() {
+    const threadEl = document.querySelector('h2[data-thread-perm-id]');
+    const threadId = threadEl?.getAttribute('data-thread-perm-id') || '';
+
     const subject =
-      document.querySelector('h2[data-thread-perm-id]')?.textContent?.trim() ||
+      threadEl?.textContent?.trim() ||
       document.querySelector('.hP')?.textContent?.trim() ||
       '';
 
@@ -293,9 +314,17 @@
       ? `\n\n${collapsed.length} collapsed message(s) not included. Press ; in Gmail to expand all, then try again.`
       : '';
 
+    // Extract message IDs for Gmail API access
+    const messageIds = Array.from(document.querySelectorAll('[data-message-id]'))
+      .map((el) => el.getAttribute('data-message-id'))
+      .filter(Boolean);
+    const legacyMessageIds = Array.from(document.querySelectorAll('[data-legacy-message-id]'))
+      .map((el) => el.getAttribute('data-legacy-message-id'))
+      .filter(Boolean);
+
     const url = window.location.href;
 
-    return { subject, sender, date, body, url, warning };
+    return { subject, sender, date, body, url, warning, threadId, messageIds, legacyMessageIds };
   }
 
   // --- Action Handlers ---
@@ -318,6 +347,8 @@
       .filter((b) => checkedBlockIds.has(b.id))
       .map((b) => b.id);
 
+    const enableResearch = checkedBlockIds.has('deep_research');
+
     // Load custom templates from storage, then build prompt
     chrome.storage.sync.get({ blockTemplates: {}, emailDataScope: 'full' }, (settings) => {
       const data = { ...emailData };
@@ -327,15 +358,15 @@
 
       const context = buildEmailContext(data);
       const prompt = buildPrompt(orderedIds, context, settings.blockTemplates);
-      showPromptEditor(prompt);
+      showPromptEditor(prompt, { enableResearch });
     });
   }
 
-  function sendPrompt(prompt) {
+  function sendPrompt(prompt, options = {}) {
     hideOverlay();
     chrome.runtime.sendMessage({
       type: 'SEND_TO_CLAUDE',
-      payload: { prompt },
+      payload: { prompt, ...options },
     });
   }
 
@@ -363,7 +394,12 @@
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           const textarea = document.querySelector('#precog-prompt-editor');
-          if (textarea) sendPrompt(textarea.value);
+          if (!textarea) return;
+          if (e.shiftKey) {
+            sendPrompt(textarea.value, { ...editorOptions, promptEntry: 'paste' });
+          } else {
+            sendPrompt(textarea.value, { ...editorOptions, promptEntry: 'auto-submit' });
+          }
           return;
         }
         return;

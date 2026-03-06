@@ -20,8 +20,73 @@
     });
   }
 
-  async function injectPrompt(prompt, settings) {
+  async function enableResearchMode() {
     try {
+      // Look for the Research toggle — it's a menuitemcheckbox with "Research" text
+      // First, we need to open the model/features menu
+      // The research toggle is inside a dropdown that may need to be opened
+      const researchToggle = await findResearchToggle();
+      if (!researchToggle) {
+        console.warn('[Precog] Could not find Research toggle');
+        return;
+      }
+
+      const isChecked = researchToggle.getAttribute('aria-checked') === 'true';
+      if (!isChecked) {
+        researchToggle.click();
+        console.log('[Precog] Enabled Research mode');
+        // Wait for the UI to update
+        await new Promise((r) => setTimeout(r, 500));
+      } else {
+        console.log('[Precog] Research mode already enabled');
+      }
+    } catch (err) {
+      console.warn('[Precog] Failed to enable Research mode:', err.message);
+    }
+  }
+
+  async function findResearchToggle() {
+    // The Research toggle is a menuitemcheckbox inside a dropdown.
+    // Try to find it directly first (dropdown may already be open).
+    let toggle = findResearchCheckbox();
+    if (toggle) return toggle;
+
+    // Look for the button that opens the model picker/features menu.
+    // It's typically near the chat input area.
+    const buttons = document.querySelectorAll('button[aria-haspopup="menu"], button[aria-haspopup="dialog"]');
+    for (const btn of buttons) {
+      // Click to open the menu
+      btn.click();
+      await new Promise((r) => setTimeout(r, 300));
+
+      toggle = findResearchCheckbox();
+      if (toggle) return toggle;
+
+      // Close if this wasn't the right menu
+      btn.click();
+      await new Promise((r) => setTimeout(r, 100));
+    }
+
+    return null;
+  }
+
+  function findResearchCheckbox() {
+    // Find menuitemcheckbox elements that contain "Research" text
+    const items = document.querySelectorAll('[role="menuitemcheckbox"]');
+    for (const item of items) {
+      if (item.textContent.trim().includes('Research')) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  async function injectPrompt(prompt, settings, options = {}) {
+    try {
+      if (options.enableResearch) {
+        await enableResearchMode();
+      }
+
       const input = await waitForElement('div[data-testid="chat-input"]');
 
       input.focus();
@@ -100,10 +165,14 @@
       }
 
       if (response && response.type === 'INJECT_PROMPT') {
+        const { prompt, enableResearch, promptEntry } = response;
         chrome.storage.sync.get(
           { promptEntry: 'auto-submit' },
           (settings) => {
-            injectPrompt(response.prompt, settings);
+            // Payload override takes precedence over stored setting
+            const effectiveSettings = { ...settings };
+            if (promptEntry) effectiveSettings.promptEntry = promptEntry;
+            injectPrompt(prompt, effectiveSettings, { enableResearch });
             watchForAsanaActions();
           }
         );

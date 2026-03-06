@@ -109,7 +109,7 @@
 #precog-prompt-editor {
   flex: 1;
   width: 100%;
-  min-height: 300px;
+  min-height: 200px;
   padding: 14px;
   border-radius: 8px;
   border: 1px solid #333;
@@ -118,8 +118,9 @@
   font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 13px;
   line-height: 1.5;
-  resize: vertical;
+  resize: none;
   outline: none;
+  overflow-y: auto;
 }
 
 #precog-prompt-editor:focus {
@@ -129,8 +130,9 @@
 .precog-editor-actions {
   display: flex;
   gap: 10px;
-  margin-top: 16px;
+  padding-top: 32px;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .precog-btn-primary {

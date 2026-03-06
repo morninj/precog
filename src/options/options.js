@@ -42,6 +42,11 @@ const BLOCKS = [
     label: 'Draft a reply',
     defaultTemplate: 'Draft a reply that addresses the key points and any open questions. Match the tone and formality of the original message.',
   },
+  {
+    id: 'deep_research',
+    label: 'Deep research',
+    defaultTemplate: 'Use your research capabilities to thoroughly investigate this topic before responding.',
+  },
 ];
 
 const promptEntryEl = document.getElementById('promptEntry');

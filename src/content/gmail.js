@@ -14,6 +14,7 @@
         'Assign the task to me.',
         'Set the due date to today ({today}).',
         'Include a link to the source at the very top of the description.',
+        'At the end of the description, include the Gmail thread ID, Gmail message IDs, and Gmail RFC message IDs from the email details below.',
       ].join('\n- '),
     },
     {

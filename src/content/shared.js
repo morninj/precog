@@ -274,17 +274,16 @@ function initPrecog(config) {
 
   // --- Keyboard Listeners ---
 
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.altKey && (e.key === 'p' || e.key === 'π')) {
-      e.preventDefault();
-      e.stopPropagation();
+  // Listen for shortcut command from service worker
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'TOGGLE_OVERLAY') {
       if (overlayEl) {
         hideOverlay();
       } else if (!config.canActivate || config.canActivate()) {
         showOverlay();
       }
     }
-  }, true); // capture phase to intercept before the host page
+  });
 
   function attachOverlayKeyHandler(el) {
     el.addEventListener('keydown', (e) => {

@@ -1,14 +1,10 @@
 (() => {
-  const DEFAULT_PROMPT_TEMPLATE = `Based on the following email, create an Asana task.
-
-Requirements:
-- Title should be in the imperative mood, like a good git commit message (e.g. "Respond to Joe's email about vibecoding", "Review contract from Acme Corp", "Schedule follow-up with Sarah")
+  const BASE_REQUIREMENTS = `- Title should be in the imperative mood, like a good git commit message (e.g. "Review contract from Acme Corp", "Schedule follow-up with Sarah")
 - Assign the task to me
 - Set the due date to today ({today})
-- Description should summarize the key points and list any TODO items
-- Include the link to the original email at the very top of the description
+- Include the link to the original email at the very top of the description`;
 
-Email details:
+  const EMAIL_DETAILS = `Email details:
 - Subject: {subject}
 - From: {sender}
 - Date: {date}
@@ -16,19 +12,18 @@ Email details:
 - Body:
 {body}`;
 
-  let overlayEl = null;
-  let overlayMode = 'actions'; // 'actions' or 'editor'
-  let selectedIndex = 0;
+  const DEFAULT_PROMPT_TEMPLATE = `Based on the following email, create an Asana task.
 
-  // --- Overlay UI ---
+Requirements:
+${BASE_REQUIREMENTS}
+- Description should summarize the key points and list any TODO items
+
+${EMAIL_DETAILS}`;
 
   const DEFAULT_DEEP_CONTEXT_TEMPLATE = `Based on the following email, create an Asana task with full context.
 
 Requirements:
-- Title should be in the imperative mood, like a good git commit message (e.g. "Respond to Joe's email about vibecoding", "Review contract from Acme Corp", "Schedule follow-up with Sarah")
-- Assign the task to me
-- Set the due date to today ({today})
-- Include the link to the original email at the very top of the description
+${BASE_REQUIREMENTS}
 - Search Gmail for all related email threads with this sender and on this topic. Include links to relevant threads.
 - Search Google Drive for any related documents, spreadsheets, or files. Include links to relevant files.
 - Search Slack for any related conversations or messages. Include links to relevant threads.
@@ -36,24 +31,22 @@ Requirements:
 - List all TODO items and next steps
 - Include a "Sources" section at the bottom with links to all relevant emails, Drive files, and Slack messages
 
-Email details:
-- Subject: {subject}
-- From: {sender}
-- Date: {date}
-- Link: {url}
-- Body:
-{body}`;
+${EMAIL_DETAILS}`;
+
+  let overlayEl = null;
+  let overlayMode = 'actions'; // 'actions' or 'editor'
+  let selectedIndex = 0;
 
   const ACTIONS = [
     {
       key: '1',
-      label: 'Create Asana Task',
+      label: 'Create Asana task',
       desc: 'Create a task from this email',
       handler: handleCreateAsanaTask,
     },
     {
       key: '2',
-      label: 'Create Asana Task with Deep Context',
+      label: 'Create Asana task with deep context',
       desc: 'Gather context from Gmail, Drive, and Slack, then create a task',
       handler: handleDeepContextTask,
     },
@@ -82,8 +75,6 @@ Email details:
 
     if (overlayMode === 'actions') {
       modal.innerHTML = `
-        <h1>Precog</h1>
-        <p class="precog-hint">↑↓ to navigate &middot; Enter to select &middot; Esc to close</p>
         <ul class="precog-actions">
           ${ACTIONS.map(
             (a, i) => `

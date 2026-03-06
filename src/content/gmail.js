@@ -351,8 +351,9 @@ Email details:
         return;
       }
 
-      // Actions mode
+      // Actions mode — stop event from reaching Gmail
       e.preventDefault();
+      e.stopPropagation();
 
       if (e.key === 'Escape') {
         hideOverlay();

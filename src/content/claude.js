@@ -26,21 +26,23 @@
 
       input.focus();
 
-      // Set content as paragraphs (tiptap expects <p> elements)
-      input.innerHTML = prompt
-        .split('\n')
-        .map((line) => `<p>${line || '<br>'}</p>`)
-        .join('');
-
+      // Clear any existing content
+      input.innerHTML = '<p><br></p>';
       input.dispatchEvent(new Event('input', { bubbles: true }));
 
+      // Use execCommand to insert text — this triggers tiptap's input handling
+      // so it properly registers the content (unlike innerHTML which bypasses it)
+      document.execCommand('insertText', false, prompt);
+
       if (settings.promptEntry === 'auto-submit') {
-        setTimeout(() => {
-          const sendButton = document.querySelector('button[aria-label="Send message"]');
-          if (sendButton) {
-            sendButton.click();
-          }
-        }, 500);
+        // Wait for tiptap to fully process the text
+        await new Promise((r) => setTimeout(r, 1500));
+
+        // Try submitting via Enter key on the input (how users actually submit)
+        input.dispatchEvent(new KeyboardEvent('keydown', {
+          key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true, cancelable: true,
+        }));
+        console.log('[Precog] Dispatched Enter key to submit');
       }
     } catch (err) {
       console.error('[Precog]', err.message);

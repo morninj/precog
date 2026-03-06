@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Precog Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Precog Settings</h1>
+
+    <div class="setting">
+      <label for="promptEntry">Prompt entry method</label>
+      <select id="promptEntry">
+        <option value="auto-submit">Auto-submit (send immediately)</option>
+        <option value="paste">Paste &amp; review (you send manually)</option>
+      </select>
+      <p class="hint">Controls whether the prompt is automatically submitted in Claude.ai or pasted for review.</p>
+    </div>
+
+    <div class="setting">
+      <label for="emailDataScope">Email data scope</label>
+      <select id="emailDataScope">
+        <option value="full">Full body</option>
+        <option value="snippet">Snippet (~200 characters)</option>
+      </select>
+      <p class="hint">Controls how much of the email body is included in the prompt.</p>
+    </div>
+
+    <div class="setting">
+      <label for="promptTemplate">Quick task prompt template</label>
+      <textarea id="promptTemplate" rows="12"></textarea>
+      <p class="hint">Available placeholders: {subject}, {sender}, {date}, {url}, {body}, {today}. You can edit the prompt per-use in the overlay.</p>
+      <button id="resetTemplate" class="btn-link">Reset to default</button>
+    </div>
+
+    <div class="setting">
+      <label for="deepContextTemplate">Deep context task prompt template</label>
+      <textarea id="deepContextTemplate" rows="16"></textarea>
+      <p class="hint">Same placeholders as above. This template instructs Claude to search Gmail, Drive, and Slack for related context.</p>
+      <button id="resetDeepTemplate" class="btn-link">Reset to default</button>
+    </div>
+
+    <div class="actions">
+      <button id="save">Save</button>
+      <span id="status"></span>
+    </div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

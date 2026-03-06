@@ -1,0 +1,150 @@
+#precog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#precog-modal {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border-radius: 12px;
+  width: 50vw;
+  max-width: 600px;
+  min-width: 360px;
+  max-height: 70vh;
+  padding: 32px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+#precog-modal h1 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+}
+
+#precog-modal .precog-hint {
+  margin: 0 0 24px 0;
+  font-size: 13px;
+  color: #888;
+}
+
+#precog-modal .precog-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#precog-modal .precog-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#precog-modal .precog-action:hover,
+#precog-modal .precog-action.precog-selected {
+  background: #2a2a4a;
+}
+
+#precog-modal .precog-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #333;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+#precog-modal .precog-action-label {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+#precog-modal .precog-action-desc {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Editor mode */
+#precog-modal.precog-editor-mode {
+  width: 60vw;
+  max-width: 800px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#precog-prompt-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 300px;
+  max-height: 50vh;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #111;
+  color: #e0e0e0;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+
+#precog-prompt-editor:focus {
+  border-color: #6366f1;
+}
+
+.precog-editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.precog-btn-primary {
+  padding: 8px 18px;
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.precog-btn-primary:hover {
+  background: #5558e6;
+}
+
+.precog-btn-secondary {
+  padding: 8px 18px;
+  background: #333;
+  color: #ccc;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.precog-btn-secondary:hover {
+  background: #444;
+}

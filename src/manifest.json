@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Precog",
+  "version": "0.1.0",
+  "description": "Automate tasks across Gmail, Claude, Drive, and Asana",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content/gmail.js"],
+      "css": ["content/gmail.css"]
+    },
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content/claude.js"]
+    }
+  ],
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

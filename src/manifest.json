@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Precog",
-  "version": "0.1.0.4",
+  "version": "0.1.0.5",
   "description": "Automate tasks across Gmail, Claude, Drive, and Asana",
   "permissions": [
     "activeTab",

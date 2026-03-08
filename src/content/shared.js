@@ -247,10 +247,6 @@ function initPrecog(config) {
       return;
     }
 
-    if (data.warning) {
-      if (!confirm(data.warning + '\n\nContinue anyway?')) return;
-    }
-
     const orderedIds = blocks
       .filter((b) => checkedBlockIds.has(b.id))
       .map((b) => b.id);
@@ -280,6 +276,7 @@ function initPrecog(config) {
       if (overlayEl) {
         hideOverlay();
       } else if (!config.canActivate || config.canActivate()) {
+        if (config.beforeShow && !config.beforeShow()) return;
         showOverlay();
       }
     }

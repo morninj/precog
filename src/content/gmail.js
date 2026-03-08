@@ -40,11 +40,6 @@
       })
       .join('\n\n');
 
-    const collapsed = document.querySelectorAll('.adx[aria-expanded="false"], .kv[aria-expanded="false"]');
-    const warning = collapsed.length > 0
-      ? `${collapsed.length} collapsed message(s) not included. Press ; in Gmail to expand all, then try again.`
-      : '';
-
     const messageIds = Array.from(document.querySelectorAll('[data-message-id]'))
       .map((el) => el.getAttribute('data-message-id'))
       .filter(Boolean);
@@ -67,7 +62,7 @@
 
     if (!subject && !body) return null;
 
-    return { subject, sender, date, body, url, warning, threadId, messageIds, legacyMessageIds, linkedAsanaTaskGids };
+    return { subject, sender, date, body, url, threadId, messageIds, legacyMessageIds, linkedAsanaTaskGids };
   }
 
   function buildEmailContext(emailData, settings) {
@@ -117,5 +112,12 @@
     availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend', 'deep_context', 'draft_reply', 'deep_research'],
     defaultBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend'],
     noDataMessage: '[Precog] Open an email first — no email data found on this page.',
+    beforeShow() {
+      const collapsed = document.querySelectorAll('.adx[aria-expanded="false"], .kv[aria-expanded="false"]');
+      if (collapsed.length > 0) {
+        return confirm(`Some messages are collapsed and won't be included. You can press ; in Gmail to expand all.\n\nContinue anyway?`);
+      }
+      return true;
+    },
   });
 })();

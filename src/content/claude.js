@@ -100,10 +100,19 @@
       document.execCommand('insertText', false, prompt);
 
       if (settings.promptEntry === 'auto-submit') {
-        // Wait for tiptap to fully process the text
-        await new Promise((r) => setTimeout(r, 1500));
+        // Wait for the send button to become enabled — this means tiptap
+        // has fully registered the inserted text and the UI is ready.
+        const sendBtn = await waitForElement('button[aria-label="Send Message"]', 15000)
+          .catch(() => null);
 
-        // Try submitting via Enter key on the input (how users actually submit)
+        if (sendBtn) {
+          let attempts = 0;
+          while (sendBtn.disabled && attempts < 20) {
+            await new Promise((r) => setTimeout(r, 250));
+            attempts++;
+          }
+        }
+
         input.dispatchEvent(new KeyboardEvent('keydown', {
           key: 'Enter', code: 'Enter', keyCode: 13, bubbles: true, cancelable: true,
         }));
@@ -166,16 +175,8 @@
 
       if (response && response.type === 'INJECT_PROMPT') {
         const { prompt, enableResearch, promptEntry, source } = response;
-        chrome.storage.sync.get(
-          { promptEntry: 'auto-submit' },
-          (settings) => {
-            // Payload override takes precedence over stored setting
-            const effectiveSettings = { ...settings };
-            if (promptEntry) effectiveSettings.promptEntry = promptEntry;
-            injectPrompt(prompt, effectiveSettings, { enableResearch });
-            if (source === 'gmail') watchForAsanaActions();
-          }
-        );
+        injectPrompt(prompt, { promptEntry: promptEntry || 'auto-submit' }, { enableResearch });
+        if (source === 'gmail') watchForAsanaActions();
       }
     });
   }

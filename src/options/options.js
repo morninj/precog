@@ -49,7 +49,6 @@ const BLOCKS = [
   },
 ];
 
-const promptEntryEl = document.getElementById('promptEntry');
 const emailDataScopeEl = document.getElementById('emailDataScope');
 const blockEditorsEl = document.getElementById('block-editors');
 const saveBtn = document.getElementById('save');
@@ -78,12 +77,10 @@ BLOCKS.forEach((block) => {
 // Load saved settings
 chrome.storage.sync.get(
   {
-    promptEntry: 'auto-submit',
     emailDataScope: 'full',
     blockTemplates: {},
   },
   (settings) => {
-    promptEntryEl.value = settings.promptEntry;
     emailDataScopeEl.value = settings.emailDataScope;
 
     BLOCKS.forEach((block) => {
@@ -106,7 +103,6 @@ saveBtn.addEventListener('click', () => {
 
   chrome.storage.sync.set(
     {
-      promptEntry: promptEntryEl.value,
       emailDataScope: emailDataScopeEl.value,
       blockTemplates,
     },

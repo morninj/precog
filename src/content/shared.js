@@ -287,11 +287,13 @@ function initPrecog(config) {
       if (overlayMode === 'editor') {
         if (e.key === 'Escape') {
           e.preventDefault();
+          e.stopPropagation();
           hideOverlay();
           return;
         }
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
+          e.stopPropagation();
           const textarea = document.querySelector('#precog-prompt-editor');
           if (!textarea) return;
           if (e.shiftKey) {

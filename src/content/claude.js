@@ -100,17 +100,16 @@
       document.execCommand('insertText', false, prompt);
 
       if (settings.promptEntry === 'auto-submit') {
-        // Wait for the send button to become enabled — this means tiptap
-        // has fully registered the inserted text and the UI is ready.
-        const sendBtn = await waitForElement('button[aria-label="Send Message"]', 15000)
-          .catch(() => null);
+        // Give tiptap time to process the inserted text
+        await new Promise((r) => setTimeout(r, 2000));
 
-        if (sendBtn) {
-          let attempts = 0;
-          while (sendBtn.disabled && attempts < 20) {
-            await new Promise((r) => setTimeout(r, 250));
-            attempts++;
-          }
+        // Then wait for the send button to be enabled (in case UI is still loading)
+        let attempts = 0;
+        while (attempts < 20) {
+          const sendBtn = document.querySelector('button[aria-label="Send message"]');
+          if (sendBtn && !sendBtn.disabled) break;
+          await new Promise((r) => setTimeout(r, 500));
+          attempts++;
         }
 
         input.dispatchEvent(new KeyboardEvent('keydown', {

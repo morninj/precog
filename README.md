@@ -14,7 +14,7 @@ Each building block adds a set of instructions to the prompt. You can toggle the
 - **Summarize** asks Claude to summarize the key points.
 - **Identify TODOs** asks Claude to list all TODOs and next steps.
 - **Recommend approaches** asks Claude to suggest how to handle each TODO, with confidence levels, strategic considerations, and anticipated questions.
-- **Search for deep context** asks Claude to search Gmail, Google Drive, and Slack for related content and include links to sources.
+- **Search for deep context** asks Claude to search Google Workspace and Slack for related content and include links to sources.
 - **Draft a reply** (Gmail) or **Draft an email** (Asana) asks Claude to compose a message to the appropriate recipients.
 - **Do deep research** enables Claude's research mode for thorough investigation.
 
@@ -41,7 +41,6 @@ Precog currently supports two contexts. In **Gmail**, it extracts the subject, s
 
 You can access settings by right-clicking the extension icon and selecting Options, or by going to `chrome://extensions`, finding Precog, and clicking Details then Extension options.
 
-- **Prompt entry method** controls whether the prompt is automatically submitted in Claude or pasted for manual review.
 - **Email data scope** controls how much of the email body is included in the prompt.
 - **Prompt building blocks** lets you customize the template text for each block.
 

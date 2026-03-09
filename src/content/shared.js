@@ -304,6 +304,8 @@ function initPrecog(config) {
   }
 
   function hideOverlay() {
+    customTitle = '';
+    showTitleInput = false;
     if (overlayEl) {
       overlayEl.remove();
       overlayEl = null;

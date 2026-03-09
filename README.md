@@ -1,10 +1,10 @@
 # Precog
 
-Precog is a Chrome extension that automates AI workflows across Google Workspace, Asana, and Claude. It extracts context from the app you're working in, lets you compose a prompt from modular building blocks, and sends it to Claude for processing.
+Precog is a Chrome extension that automates AI workflows across Google Workspace, Asana, Slack, and Claude. It extracts context from the app you're working in, lets you compose a prompt from modular building blocks, and sends it to Claude for processing.
 
 ## What it does
 
-When you're viewing an email in Gmail or a task in Asana, press **Cmd+Shift+P** (configurable at `chrome://extensions/shortcuts`) to open a command palette. You can select from composable building blocks to construct a prompt, review and edit it, and send it to Claude. Claude then carries out the requested actions, like creating an Asana task, drafting a reply, or researching a topic.
+When you're viewing an email in Gmail, a task in Asana, or a message in Slack, press **Cmd+Shift+P** (configurable at `chrome://extensions/shortcuts`) to open a command palette. In Slack, you can also right-click a message and select **Precog** from the context menu. You can select from composable building blocks to construct a prompt, review and edit it, and send it to Claude. Claude then carries out the requested actions, like creating an Asana task, drafting a reply, or researching a topic.
 
 ### Building blocks
 
@@ -20,7 +20,7 @@ Each building block adds a set of instructions to the prompt. You can toggle the
 
 ### Supported contexts
 
-Precog currently supports two contexts. In **Gmail**, it extracts the subject, sender, date, full thread body, and message IDs from the email you're viewing. In **Asana**, it extracts the task title and description, preserving markdown formatting and links.
+Precog currently supports three contexts. In **Gmail**, it extracts the subject, sender, date, full thread body, and message IDs from the email you're viewing. In **Asana**, it extracts the task title and description, preserving markdown formatting and links. In **Slack**, it extracts the message text, sender, timestamp, channel, and permalink from a message via the context menu or keyboard shortcut.
 
 ## Installation
 
@@ -30,7 +30,7 @@ Precog currently supports two contexts. In **Gmail**, it extracts the subject, s
 
 ## Usage
 
-1. Open an email in Gmail or a task in Asana.
+1. Open an email in Gmail, a task in Asana, or a channel in Slack.
 2. Press **Cmd+Shift+P** to open the command palette.
 3. Toggle the building blocks you want to include.
 4. Click **Generate prompt** (or press Cmd+Enter).
@@ -54,6 +54,7 @@ src/
     shared.js                     # Overlay UI, block definitions, prompt assembly
     gmail.js                      # Gmail data extraction and context building
     asana.js                      # Asana data extraction and context building
+    slack.js                      # Slack data extraction and context menu injection
     claude.js                     # Prompt injection into Claude.ai
     gmail.css                     # Shared overlay styles
   options/                        # Settings page

@@ -282,6 +282,8 @@ function initPrecog(config) {
     }
   });
 
+  return { showOverlay, hideOverlay };
+
   function attachOverlayKeyHandler(el) {
     el.addEventListener('keydown', (e) => {
       if (overlayMode === 'editor') {

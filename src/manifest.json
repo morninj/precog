@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Precog",
   "version": "0.1.0.8",
-  "description": "Automate tasks across Google Workspace, Asana, and Claude",
+  "description": "Automate tasks across Google Workspace, Asana, Slack, and Claude",
   "permissions": [
     "activeTab",
     "storage"
@@ -28,6 +28,11 @@
     {
       "matches": ["https://app.asana.com/*"],
       "js": ["content/shared.js", "content/asana.js"],
+      "css": ["content/gmail.css"]
+    },
+    {
+      "matches": ["https://app.slack.com/*", "https://*.slack.com/*"],
+      "js": ["content/shared.js", "content/slack.js"],
       "css": ["content/gmail.css"]
     },
     {

@@ -107,6 +107,7 @@
 
   initPrecog({
     source: 'gmail',
+    canActivate: () => !!document.querySelector('h2[data-thread-perm-id]'),
     extractData: extractEmailData,
     buildContext: buildEmailContext,
     availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],

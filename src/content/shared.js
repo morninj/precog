@@ -12,7 +12,7 @@ const ALL_BLOCKS = [
       'Assign the task to me.',
       'Set the due date to today ({today}).',
       'Include a link to the source at the very top of the description.',
-      'At the end of the description, include the Gmail thread ID, Gmail message IDs, and Gmail RFC message IDs from the email details below.',
+      'At the end of the description, include any source-specific IDs from the details below (e.g. Gmail thread/message IDs, Slack message link, Asana task GID).',
     ].join('\n- '),
   },
   {

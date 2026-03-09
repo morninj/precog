@@ -91,6 +91,37 @@
   margin-top: 2px;
 }
 
+.precog-block-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Mode toggle */
+.precog-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.precog-mode {
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: #666;
+}
+
+.precog-mode-active {
+  background: rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+  font-weight: 500;
+}
+
+.precog-mode-sep {
+  color: #444;
+}
+
 .precog-generate-btn {
   margin-top: 16px;
   width: 100%;

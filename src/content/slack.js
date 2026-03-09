@@ -211,8 +211,8 @@ console.log('[Precog] Slack content script loaded');
     },
     extractData: () => capturedMessageData,
     buildContext: buildSlackContext,
-    availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend', 'deep_context', 'draft_reply', 'deep_research'],
-    defaultBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend'],
+    availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
+    defaultBlockIds: ['asana_task', 'summarize', 'identify_todos'],
     noDataMessage: '[Precog] No Slack message found. Hover over a message or use the context menu first.',
   });
 })();

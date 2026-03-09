@@ -109,8 +109,8 @@
     source: 'gmail',
     extractData: extractEmailData,
     buildContext: buildEmailContext,
-    availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend', 'deep_context', 'draft_reply', 'deep_research'],
-    defaultBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend'],
+    availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
+    defaultBlockIds: ['asana_task', 'summarize', 'identify_todos'],
     noDataMessage: '[Precog] Open an email first — no email data found on this page.',
     beforeShow() {
       const collapsed = document.querySelectorAll('.adx[aria-expanded="false"], .kv[aria-expanded="false"]');

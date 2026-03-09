@@ -14,6 +14,20 @@ const ALL_BLOCKS = [
       'Include a link to the source at the very top of the description.',
       'At the end of the description, include any source-specific IDs from the details below (e.g. Gmail thread/message IDs, Slack message link, Asana task GID).',
     ].join('\n- '),
+    modes: [
+      { id: 'full', label: 'Full' },
+      {
+        id: 'concise',
+        label: 'Concise',
+        template: [
+          'Create an Asana task based on the above context.',
+          'Title should be no more than 8 words, in the imperative mood.',
+          'Assign the task to me.',
+          'Set the due date to today ({today}).',
+          'The description should ONLY contain a link to the source. No other text in the description.',
+        ].join('\n- '),
+      },
+    ],
   },
   {
     id: 'summarize',
@@ -26,13 +40,14 @@ const ALL_BLOCKS = [
     label: 'Identify TODOs',
     desc: 'List TODOs and next steps',
     defaultTemplate: 'List all TODOs and next steps.',
-  },
-  {
-    id: 'recommend',
-    label: 'Recommend approaches',
-    desc: 'Suggest how to handle each TODO',
-    defaultTemplate: 'For each TODO, include a brief recommended approach with a confidence level (high/medium/low), any strategic considerations, and anticipated questions or blockers.',
-    requires: ['identify_todos'],
+    modes: [
+      { id: 'list', label: 'List' },
+      {
+        id: 'advise',
+        label: 'Advise',
+        template: 'List all TODOs and next steps. For each TODO, include a brief recommended approach with a confidence level (high/medium/low), any strategic considerations, and anticipated questions or blockers.',
+      },
+    ],
   },
   {
     id: 'deep_context',
@@ -74,6 +89,7 @@ function initPrecog(config) {
   let overlayMode = 'blocks'; // 'blocks' or 'editor'
   let selectedIndex = 0;
   let checkedBlockIds = new Set(config.defaultBlockIds);
+  let blockModes = {}; // { blockId: modeIndex }
   let editorOptions = {};
 
   // --- Prompt Assembly ---
@@ -85,7 +101,11 @@ function initPrecog(config) {
 
     const requirements = blockIds
       .map((id) => {
-        const template = blockTemplates[id] || ALL_BLOCKS.find((b) => b.id === id)?.defaultTemplate || '';
+        const block = ALL_BLOCKS.find((b) => b.id === id);
+        const modeIndex = blockModes[id] || 0;
+        const mode = block?.modes?.[modeIndex];
+        const template = (mode?.template) ? mode.template
+          : (blockTemplates[id] || block?.defaultTemplate || '');
         return `- ${template}`;
       })
       .join('\n');
@@ -127,15 +147,25 @@ function initPrecog(config) {
     if (overlayMode === 'blocks') {
       modal.innerHTML = `
         <ul class="precog-blocks">
-          ${blocks.map((b, i) => `
-            <li class="precog-block${i === selectedIndex ? ' precog-focused' : ''}${checkedBlockIds.has(b.id) ? ' precog-checked' : ''}" data-id="${b.id}" data-index="${i}">
-              <span class="precog-checkbox">${checkedBlockIds.has(b.id) ? '&#10003;' : ''}</span>
-              <div>
+          ${blocks.map((b, i) => {
+            const focused = i === selectedIndex;
+            const checked = checkedBlockIds.has(b.id);
+            const modeHtml = (b.modes && focused) ? `
+              <div class="precog-mode-toggle">
+                ${b.modes.map((m, mi) =>
+                  `<span class="precog-mode${mi === (blockModes[b.id] || 0) ? ' precog-mode-active' : ''}" data-block-id="${b.id}" data-mode-index="${mi}">${m.label}</span>`
+                ).join('<span class="precog-mode-sep">&middot;</span>')}
+              </div>` : '';
+            return `
+            <li class="precog-block${focused ? ' precog-focused' : ''}${checked ? ' precog-checked' : ''}" data-id="${b.id}" data-index="${i}">
+              <span class="precog-checkbox">${checked ? '&#10003;' : ''}</span>
+              <div class="precog-block-content">
                 <div class="precog-block-label">${b.label}</div>
                 <div class="precog-block-desc">${b.desc}</div>
               </div>
-            </li>
-          `).join('')}
+              ${modeHtml}
+            </li>`;
+          }).join('')}
         </ul>
         <button id="precog-generate-btn" class="precog-btn-primary precog-generate-btn"${checkedBlockIds.size === 0 ? ' disabled' : ''}>Generate prompt &#8984;&#8629;</button>
       `;
@@ -143,6 +173,14 @@ function initPrecog(config) {
       modal.querySelectorAll('.precog-block').forEach((el) => {
         el.addEventListener('click', () => {
           toggleBlock(el.dataset.id);
+          renderOverlay();
+        });
+      });
+
+      modal.querySelectorAll('.precog-mode').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          blockModes[el.dataset.blockId] = parseInt(el.dataset.modeIndex, 10);
           renderOverlay();
         });
       });
@@ -163,17 +201,10 @@ function initPrecog(config) {
   }
 
   function toggleBlock(id) {
-    const block = ALL_BLOCKS.find((b) => b.id === id);
     if (checkedBlockIds.has(id)) {
       checkedBlockIds.delete(id);
-      ALL_BLOCKS.forEach((b) => {
-        if (b.requires?.includes(id)) checkedBlockIds.delete(b.id);
-      });
     } else {
       checkedBlockIds.add(id);
-      if (block?.requires) {
-        block.requires.forEach((dep) => checkedBlockIds.add(dep));
-      }
     }
   }
 
@@ -326,6 +357,19 @@ function initPrecog(config) {
       if (e.key === 'ArrowUp') {
         selectedIndex = (selectedIndex - 1 + blocks.length) % blocks.length;
         renderOverlay();
+        return;
+      }
+
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const block = blocks[selectedIndex];
+        if (block.modes) {
+          const current = blockModes[block.id] || 0;
+          const len = block.modes.length;
+          blockModes[block.id] = e.key === 'ArrowRight'
+            ? (current + 1) % len
+            : (current - 1 + len) % len;
+          renderOverlay();
+        }
         return;
       }
 

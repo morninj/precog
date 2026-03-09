@@ -195,13 +195,21 @@ console.log('[Precog] Slack content script loaded');
 
   precogApi = initPrecog({
     source: 'slack',
-    extractData: () => {
-      // Use captured data from context menu click
-      if (capturedMessageData) return capturedMessageData;
-      // Fallback for keyboard shortcut: try to find hovered message
+    beforeShow() {
+      // Called only for keyboard shortcut (context menu calls showOverlay directly).
+      // Capture the hovered message now, before the overlay covers the page.
+      capturedMessageData = null;
       const msgEl = findActiveMessage();
-      return extractFromMessageEl(msgEl);
+      if (msgEl) {
+        capturedMessageData = extractFromMessageEl(msgEl);
+      }
+      if (!capturedMessageData) {
+        alert('[Precog] Hover over a message or use the context menu.');
+        return false;
+      }
+      return true;
     },
+    extractData: () => capturedMessageData,
     buildContext: buildSlackContext,
     availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend', 'deep_context', 'draft_reply', 'deep_research'],
     defaultBlockIds: ['asana_task', 'summarize', 'identify_todos', 'recommend'],

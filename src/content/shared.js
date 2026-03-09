@@ -8,7 +8,7 @@ const ALL_BLOCKS = [
     desc: 'Create a task with title, assignee, and due date',
     defaultTemplate: [
       'Create an Asana task based on the above context.',
-      'Title should be in the imperative mood, like a good git commit message (e.g. "Review contract from Acme Corp", "Schedule follow-up with Sarah").',
+      'Title should be no more than {maxTitleWords} words, in the imperative mood, like a good git commit message (e.g. "Review contract from Acme Corp", "Schedule follow-up with Sarah").',
       'Assign the task to me.',
       'Set the due date to today ({today}).',
       'Include a link to the source at the very top of the description.',
@@ -21,7 +21,7 @@ const ALL_BLOCKS = [
         label: 'Concise',
         template: [
           'Create an Asana task based on the above context.',
-          'Title should be no more than 8 words, in the imperative mood.',
+          'Title should be no more than {maxTitleWords} words, in the imperative mood.',
           'Assign the task to me.',
           'Set the due date to today ({today}).',
           'The description should ONLY contain a link to the source. No other text in the description.',
@@ -96,7 +96,7 @@ function initPrecog(config) {
 
   // --- Prompt Assembly ---
 
-  function buildPrompt(blockIds, context, blockTemplates) {
+  function buildPrompt(blockIds, context, blockTemplates, settings) {
     const today = new Date().toLocaleDateString('en-US', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     });
@@ -110,8 +110,7 @@ function initPrecog(config) {
           : (blockTemplates[id] || block?.defaultTemplate || '');
         if (id === 'asana_task' && customTitle.trim()) {
           template = template
-            .replace(/\n?-\s*Title should be in the imperative mood[^\n]*/g, '')
-            .replace(/\n?-\s*Title should be no more than 8 words[^\n]*/g, '');
+            .replace(/\n?-\s*Title should be no more than[^\n]*/g, '');
           template += `\n- Use this exact title for the Asana task: "${customTitle.trim()}"`;
         }
         return `- ${template}`;
@@ -127,7 +126,7 @@ function initPrecog(config) {
       context.details,
     ].join('\n');
 
-    return prompt.replace(/\{today\}/g, today);
+    return prompt.replace(/\{today\}/g, today).replace(/\{maxTitleWords\}/g, settings.maxTitleWords || '10');
   }
 
   // --- Overlay UI ---
@@ -329,9 +328,9 @@ function initPrecog(config) {
 
     const enableResearch = checkedBlockIds.has('deep_research');
 
-    chrome.storage.sync.get({ blockTemplates: {}, emailDataScope: 'full' }, (settings) => {
+    chrome.storage.sync.get({ blockTemplates: {}, emailDataScope: 'full', maxTitleWords: '10' }, (settings) => {
       const context = config.buildContext(data, settings);
-      const prompt = buildPrompt(orderedIds, context, settings.blockTemplates);
+      const prompt = buildPrompt(orderedIds, context, settings.blockTemplates, settings);
       if (quickCreate) {
         sendPrompt(prompt, { enableResearch, promptEntry: 'auto-submit' });
       } else {

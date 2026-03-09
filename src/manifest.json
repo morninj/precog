@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Precog",
-  "version": "0.1.0.10",
+  "version": "0.1.0.11",
   "description": "Automate tasks across Google Workspace, Asana, Slack, and Claude",
   "permissions": [
     "activeTab",

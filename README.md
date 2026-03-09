@@ -42,6 +42,7 @@ Precog currently supports three contexts. In **Gmail**, it extracts the subject,
 You can access settings by right-clicking the extension icon and selecting Options, or by going to `chrome://extensions`, finding Precog, and clicking Details then Extension options.
 
 - **Email data scope** controls how much of the email body is included in the prompt.
+- **Max Asana task title length** sets the word limit for auto-generated Asana task titles (default: 10).
 - **Prompt building blocks** lets you customize the template text for each block.
 
 ## Project structure

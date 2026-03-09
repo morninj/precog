@@ -10,7 +10,7 @@ When you're viewing an email in Gmail, a task in Asana, or a message in Slack, p
 
 Each building block adds a set of instructions to the prompt. You can toggle them on and off to customize what Claude does.
 
-- **Create Asana task** creates a task with a title, assignee, due date, and custom fields based on the context. Supports **Full** and **Concise** modes — concise mode limits the title to 8 words and only includes a source link in the description.
+- **Create Asana task** creates a task with a title, assignee, due date, and custom fields based on the context. Supports **Full** and **Concise** modes — concise mode limits the title to 8 words and only includes a source link in the description. You can also set a custom title via the inline "custom title" link (or press T).
 - **Summarize** asks Claude to summarize the key points.
 - **Identify TODOs** asks Claude to list all TODOs and next steps. Supports **List** and **Advise** modes — advise mode includes recommended approaches with confidence levels, strategic considerations, and anticipated questions.
 - **Search for deep context** asks Claude to search Google Workspace and Slack for related content and include links to sources.

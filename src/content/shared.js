@@ -90,6 +90,8 @@ function initPrecog(config) {
   let selectedIndex = 0;
   let checkedBlockIds = new Set(config.defaultBlockIds);
   let blockModes = {}; // { blockId: modeIndex }
+  let customTitle = '';
+  let showTitleInput = false;
   let editorOptions = {};
 
   // --- Prompt Assembly ---
@@ -104,8 +106,14 @@ function initPrecog(config) {
         const block = ALL_BLOCKS.find((b) => b.id === id);
         const modeIndex = blockModes[id] || 0;
         const mode = block?.modes?.[modeIndex];
-        const template = (mode?.template) ? mode.template
+        let template = (mode?.template) ? mode.template
           : (blockTemplates[id] || block?.defaultTemplate || '');
+        if (id === 'asana_task' && customTitle.trim()) {
+          template = template
+            .replace(/\n?-\s*Title should be in the imperative mood[^\n]*/g, '')
+            .replace(/\n?-\s*Title should be no more than 8 words[^\n]*/g, '');
+          template += `\n- Use this exact title for the Asana task: "${customTitle.trim()}"`;
+        }
         return `- ${template}`;
       })
       .join('\n');
@@ -156,12 +164,21 @@ function initPrecog(config) {
                   `<span class="precog-mode${mi === (blockModes[b.id] || 0) ? ' precog-mode-active' : ''}" data-block-id="${b.id}" data-mode-index="${mi}">${m.label}</span>`
                 ).join('<span class="precog-mode-sep">&middot;</span>')}
               </div>` : '';
+            let titleHtml = '';
+            let descHtml = `<div class="precog-block-desc">${b.desc}</div>`;
+            if (b.id === 'asana_task' && checked && focused) {
+              descHtml = `<div class="precog-block-desc">${b.desc} (or <span class="precog-set-title" id="precog-set-title">custom title</span>)</div>`;
+              if (showTitleInput) {
+                titleHtml = `<div class="precog-title-row"><input type="text" class="precog-title-input" id="precog-custom-title" placeholder="Custom title..." value="${escapeHtml(customTitle)}"></div>`;
+              }
+            }
             return `
             <li class="precog-block${focused ? ' precog-focused' : ''}${checked ? ' precog-checked' : ''}" data-id="${b.id}" data-index="${i}">
               <span class="precog-checkbox">${checked ? '&#10003;' : ''}</span>
               <div class="precog-block-content">
                 <div class="precog-block-label">${b.label}</div>
-                <div class="precog-block-desc">${b.desc}</div>
+                ${descHtml}
+                ${titleHtml}
               </div>
               ${modeHtml}
             </li>`;
@@ -184,6 +201,25 @@ function initPrecog(config) {
           renderOverlay();
         });
       });
+
+      const setTitleLink = modal.querySelector('#precog-set-title');
+      if (setTitleLink) {
+        setTitleLink.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showTitleInput = true;
+          renderOverlay();
+          document.getElementById('precog-custom-title')?.focus();
+        });
+      }
+
+      const titleInput = modal.querySelector('#precog-custom-title');
+      if (titleInput) {
+        titleInput.addEventListener('input', (e) => {
+          customTitle = e.target.value;
+        });
+        titleInput.addEventListener('click', (e) => e.stopPropagation());
+        titleInput.focus();
+      }
 
       modal.querySelector('#precog-generate-btn').addEventListener('click', () => {
         if (checkedBlockIds.size > 0) handleGenerate();
@@ -339,7 +375,26 @@ function initPrecog(config) {
         return;
       }
 
-      // Blocks mode
+      // Blocks mode — if typing in the title input, let it through
+      if (e.target.id === 'precog-custom-title') {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          customTitle = e.target.value;
+          showTitleInput = !!customTitle.trim();
+          renderOverlay();
+          overlayEl.focus();
+          return;
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault();
+          customTitle = e.target.value;
+          if (checkedBlockIds.size > 0) handleGenerate();
+          return;
+        }
+        return;
+      }
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -369,6 +424,18 @@ function initPrecog(config) {
             ? (current + 1) % len
             : (current - 1 + len) % len;
           renderOverlay();
+        }
+        return;
+      }
+
+      if (e.key === 't' || e.key === 'T') {
+        const block = blocks[selectedIndex];
+        if (block.id === 'asana_task' && checkedBlockIds.has('asana_task')) {
+          showTitleInput = !showTitleInput;
+          renderOverlay();
+          if (showTitleInput) {
+            document.getElementById('precog-custom-title')?.focus();
+          }
         }
         return;
       }

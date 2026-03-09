@@ -184,7 +184,10 @@ function initPrecog(config) {
             </li>`;
           }).join('')}
         </ul>
-        <button id="precog-generate-btn" class="precog-btn-primary precog-generate-btn"${checkedBlockIds.size === 0 ? ' disabled' : ''}>Generate prompt &#8984;&#8629;</button>
+        <div class="precog-actions">
+          <button id="precog-quick-btn" class="precog-btn-primary"${checkedBlockIds.size === 0 ? ' disabled' : ''}>Quick run &#8984;&#8629;</button>
+          <button id="precog-generate-btn" class="precog-btn-secondary"${checkedBlockIds.size === 0 ? ' disabled' : ''}>Generate prompt &#8984;&#8679;&#8629;</button>
+        </div>
       `;
 
       modal.querySelectorAll('.precog-block').forEach((el) => {
@@ -220,6 +223,10 @@ function initPrecog(config) {
         titleInput.addEventListener('click', (e) => e.stopPropagation());
         titleInput.focus();
       }
+
+      modal.querySelector('#precog-quick-btn').addEventListener('click', () => {
+        if (checkedBlockIds.size > 0) handleGenerate({ quickCreate: true });
+      });
 
       modal.querySelector('#precog-generate-btn').addEventListener('click', () => {
         if (checkedBlockIds.size > 0) handleGenerate();
@@ -264,7 +271,7 @@ function initPrecog(config) {
     modal.innerHTML = `
       <textarea id="precog-prompt-editor">${escapeHtml(prompt)}</textarea>
       <div class="precog-editor-actions">
-        <button id="precog-send-auto-btn" class="precog-btn-primary">Send to Claude &#8984;&#8629;</button>
+        <button id="precog-send-auto-btn" class="precog-btn-primary">Send to Claude and run &#8984;&#8629;</button>
         <button id="precog-send-paste-btn" class="precog-btn-secondary">Send without submitting &#8984;&#8679;&#8629;</button>
       </div>
     `;
@@ -306,7 +313,7 @@ function initPrecog(config) {
 
   // --- Action Handlers ---
 
-  function handleGenerate() {
+  function handleGenerate({ quickCreate = false } = {}) {
     const data = config.extractData();
 
     if (!data) {
@@ -323,7 +330,11 @@ function initPrecog(config) {
     chrome.storage.sync.get({ blockTemplates: {}, emailDataScope: 'full' }, (settings) => {
       const context = config.buildContext(data, settings);
       const prompt = buildPrompt(orderedIds, context, settings.blockTemplates);
-      showPromptEditor(prompt, { enableResearch });
+      if (quickCreate) {
+        sendPrompt(prompt, { enableResearch, promptEntry: 'auto-submit' });
+      } else {
+        showPromptEditor(prompt, { enableResearch });
+      }
     });
   }
 
@@ -389,7 +400,9 @@ function initPrecog(config) {
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           customTitle = e.target.value;
-          if (checkedBlockIds.size > 0) handleGenerate();
+          if (checkedBlockIds.size > 0) {
+            handleGenerate({ quickCreate: !e.shiftKey });
+          }
           return;
         }
         return;
@@ -440,18 +453,16 @@ function initPrecog(config) {
         return;
       }
 
-      if (e.key === ' ' || e.key === 'Enter') {
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-          if (checkedBlockIds.size > 0) handleGenerate();
-          return;
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        if (checkedBlockIds.size > 0) {
+          handleGenerate({ quickCreate: !e.shiftKey });
         }
-        toggleBlock(blocks[selectedIndex].id);
-        renderOverlay();
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        if (checkedBlockIds.size > 0) handleGenerate();
+      if (e.key === ' ' || e.key === 'Enter') {
+        toggleBlock(blocks[selectedIndex].id);
+        renderOverlay();
         return;
       }
     });

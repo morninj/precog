@@ -153,9 +153,15 @@
   border-color: #6366f1;
 }
 
-.precog-generate-btn {
+.precog-actions {
+  display: flex;
+  gap: 10px;
   margin-top: 16px;
-  width: 100%;
+}
+
+.precog-actions .precog-btn-primary,
+.precog-actions .precog-btn-secondary {
+  flex: 1;
 }
 
 /* Editor mode */

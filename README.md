@@ -34,9 +34,8 @@ Precog currently supports three contexts. In **Gmail**, it extracts the subject,
 1. Open an email in Gmail, a task in Asana, or a channel in Slack.
 2. Press **Cmd+Shift+P** to open the command palette.
 3. Toggle the building blocks you want to include.
-4. Click **Generate prompt** (or press Cmd+Enter).
-5. Review and edit the generated prompt.
-6. Click **Send to Claude** (Cmd+Enter) to auto-submit, or **Send without submitting** (Cmd+Shift+Enter) to paste the prompt without submitting, which is useful if you want to add attachments or make further edits in Claude first.
+4. Click **Quick run** (Cmd+Enter) to send the prompt directly to Claude, or **Generate prompt** (Cmd+Shift+Enter) to review and edit it first.
+5. If editing, click **Send to Claude and run** (Cmd+Enter) to auto-submit, or **Send without submitting** (Cmd+Shift+Enter) to paste the prompt without submitting, which is useful if you want to add attachments or make further edits in Claude first.
 
 ## Settings
 

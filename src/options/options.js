@@ -1,14 +1,15 @@
-// Block definitions must match gmail.js
+// Block definitions must match shared.js
 const BLOCKS = [
   {
     id: 'asana_task',
     label: 'Create Asana task',
     defaultTemplate: [
       'Create an Asana task based on the above context.',
-      'Title should be in the imperative mood, like a good git commit message (e.g. "Review contract from Acme Corp", "Schedule follow-up with Sarah").',
+      'Title should be no more than {maxTitleWords} words, in the imperative mood, like a good git commit message (e.g. "Review contract from Acme Corp", "Schedule follow-up with Sarah").',
       'Assign the task to me.',
       'Set the due date to today ({today}).',
       'Include a link to the source at the very top of the description.',
+      'At the end of the description, include any source-specific IDs from the details below (e.g. Gmail thread/message IDs, Slack message link, Asana task GID).',
     ].join('\n- '),
   },
   {
@@ -20,11 +21,6 @@ const BLOCKS = [
     id: 'identify_todos',
     label: 'Identify TODOs',
     defaultTemplate: 'List all TODOs and next steps.',
-  },
-  {
-    id: 'recommend',
-    label: 'Recommend approaches',
-    defaultTemplate: 'For each TODO, include a brief recommended approach with a confidence level (high/medium/low), any strategic considerations, and anticipated questions or blockers.',
   },
   {
     id: 'deep_context',
@@ -43,8 +39,13 @@ const BLOCKS = [
     defaultTemplate: 'Draft a reply that addresses the key points and any open questions. Match the tone and formality of the original message.',
   },
   {
+    id: 'draft_email',
+    label: 'Draft an email',
+    defaultTemplate: 'Based on the task description, draft an email to the appropriate recipients. Identify the right people to contact from the context, address the key points, and include any necessary details or attachments mentioned in the task.',
+  },
+  {
     id: 'deep_research',
-    label: 'Deep research',
+    label: 'Do deep research',
     defaultTemplate: 'Use your research capabilities to thoroughly investigate this topic before responding.',
   },
 ];

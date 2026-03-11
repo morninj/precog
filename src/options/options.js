@@ -52,6 +52,7 @@ const BLOCKS = [
 
 const emailDataScopeEl = document.getElementById('emailDataScope');
 const maxTitleWordsEl = document.getElementById('maxTitleWords');
+const genericPageMaxCharsEl = document.getElementById('genericPageMaxChars');
 const blockEditorsEl = document.getElementById('block-editors');
 const saveBtn = document.getElementById('save');
 const statusEl = document.getElementById('status');
@@ -81,11 +82,13 @@ chrome.storage.sync.get(
   {
     emailDataScope: 'full',
     maxTitleWords: '10',
+    genericPageMaxChars: '20000',
     blockTemplates: {},
   },
   (settings) => {
     emailDataScopeEl.value = settings.emailDataScope;
     maxTitleWordsEl.value = settings.maxTitleWords;
+    genericPageMaxCharsEl.value = settings.genericPageMaxChars;
 
     BLOCKS.forEach((block) => {
       blockTextareas[block.id].value =
@@ -109,6 +112,7 @@ saveBtn.addEventListener('click', () => {
     {
       emailDataScope: emailDataScopeEl.value,
       maxTitleWords: maxTitleWordsEl.value,
+      genericPageMaxChars: genericPageMaxCharsEl.value,
       blockTemplates,
     },
     () => {

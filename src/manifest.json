@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Precog",
-  "version": "0.1.0.18",
-  "description": "Automate tasks across Google Workspace, Asana, Slack, and Claude",
+  "version": "0.2.0.0",
+  "description": "AI-powered actions on any webpage, with deep integrations for Gmail, Asana, Slack, and Claude",
   "permissions": [
     "activeTab",
     "storage"
@@ -21,19 +21,18 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://mail.google.com/*"],
-      "js": ["content/shared.js", "content/gmail.js"],
-      "css": ["content/gmail.css"]
-    },
-    {
-      "matches": ["https://app.asana.com/*"],
-      "js": ["content/shared.js", "content/asana.js"],
-      "css": ["content/gmail.css"]
-    },
-    {
-      "matches": ["https://app.slack.com/*", "https://*.slack.com/*"],
-      "js": ["content/shared.js", "content/slack.js"],
-      "css": ["content/gmail.css"]
+      "matches": ["http://*/*", "https://*/*"],
+      "exclude_matches": ["https://claude.ai/*"],
+      "js": [
+        "content/shared.js",
+        "content/gmail.js",
+        "content/asana.js",
+        "content/slack.js",
+        "content/generic.js",
+        "content/loader.js"
+      ],
+      "css": ["content/precog.css"],
+      "run_at": "document_idle"
     },
     {
       "matches": ["https://claude.ai/*"],

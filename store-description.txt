@@ -1,4 +1,6 @@
-Precog is an open-source, agentic Chrome extension that pulls context from Gmail, Google Drive, Asana, and Slack, then sends it to Claude with your instructions. You can build prompts from modular blocks with no copy-pasting or context switching.
+Precog is an open-source, agentic Chrome extension that pulls context from any webpage and sends it to Claude with your instructions. You can build prompts from modular blocks with no copy-pasting or context switching.
+
+It has deep integrations for Gmail, Google Drive, Asana, and Slack, with site-specific extraction that captures structured data like email threads, task descriptions, and message details. On any other page, it captures the page title, URL, and your selected text or page content.
 
 Select what you need: create Asana tasks, summarize threads, identify TODOs with recommended approaches, search for deep context across Gmail, Google Drive, and Slack, draft replies, or do deep research. Quick run sends your prompt straight to Claude, or you can review and edit it first.
 

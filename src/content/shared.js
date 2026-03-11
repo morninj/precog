@@ -328,7 +328,7 @@ function initPrecog(config) {
 
     const enableResearch = checkedBlockIds.has('deep_research');
 
-    chrome.storage.sync.get({ blockTemplates: {}, emailDataScope: 'full', maxTitleWords: '10' }, (settings) => {
+    chrome.storage.sync.get({ blockTemplates: {}, emailDataScope: 'full', maxTitleWords: '10', genericPageMaxChars: '20000' }, (settings) => {
       const context = config.buildContext(data, settings);
       const prompt = buildPrompt(orderedIds, context, settings.blockTemplates, settings);
       if (quickCreate) {

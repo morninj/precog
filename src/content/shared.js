@@ -13,6 +13,7 @@ const ALL_BLOCKS = [
       'Set the due date to today ({today}).',
       'Include a link to the source at the very top of the description.',
       'At the end of the description, include any source-specific IDs from the details below (e.g. Gmail thread/message IDs, Slack message link, Asana task GID).',
+      'Use plain text for the task description. Do not use markdown or HTML formatting.',
     ].join('\n- '),
     modes: [
       { id: 'full', label: 'Full' },

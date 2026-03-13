@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Precog",
-  "version": "0.2.0.3",
+  "version": "0.2.0.4",
   "description": "Pull context from any webpage into Claude using composable prompts, with deep integrations for Gmail, Asana, and Slack",
   "permissions": [
     "activeTab",

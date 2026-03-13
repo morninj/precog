@@ -8,13 +8,17 @@ window.__precogModules.slack = {
     // --- DOM Extraction Helpers ---
 
     function findActiveMessage() {
-      const toolbar = document.querySelector('.c-message_actions__container');
-      if (toolbar) {
-        const msg = toolbar.closest('.c-message_kit__message')
-          || toolbar.closest('.c-virtual_list__item')
-          || toolbar.closest('[data-qa="virtual-list-item"]');
-        if (msg) return msg;
+      // Find the visible actions toolbar (Slack may leave stale ones in the DOM)
+      const toolbars = document.querySelectorAll('.c-message_actions__container');
+      for (const toolbar of toolbars) {
+        if (toolbar.offsetParent !== null && toolbar.offsetHeight > 0) {
+          const msg = toolbar.closest('.c-message_kit__message')
+            || toolbar.closest('.c-virtual_list__item')
+            || toolbar.closest('[data-qa="virtual-list-item"]');
+          if (msg) return msg;
+        }
       }
+      // Fallback: look for hovered message background
       const hovered = document.querySelector('.c-message_kit__background--hovered')
         || document.querySelector('.c-message_kit__background--highlighted');
       if (hovered) {

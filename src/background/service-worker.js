@@ -15,7 +15,20 @@ chrome.commands.onCommand.addListener((command) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SEND_TO_CLAUDE') {
     pendingPayload = message.payload;
-    chrome.tabs.create({ url: 'https://claude.ai/new' });
+    const sourceTabId = sender.tab?.id;
+
+    if (sourceTabId && message.payload.source === 'gmail') {
+      // Duplicate the Gmail tab and group it with the new Claude tab
+      chrome.tabs.duplicate(sourceTabId, (dupTab) => {
+        chrome.tabs.create({ url: 'https://claude.ai/new' }, (claudeTab) => {
+          chrome.tabs.group({ tabIds: [dupTab.id, claudeTab.id] }, (groupId) => {
+            chrome.tabGroups.update(groupId, { title: 'Precog', color: 'purple' });
+          });
+        });
+      });
+    } else {
+      chrome.tabs.create({ url: 'https://claude.ai/new' });
+    }
   }
 
   if (message.type === 'CLAUDE_READY') {

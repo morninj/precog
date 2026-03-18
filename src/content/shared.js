@@ -118,14 +118,12 @@ function initPrecog(config) {
       })
       .join('\n');
 
-    const prompt = [
-      context.preamble,
-      '',
-      'Requirements:',
-      requirements,
-      '',
-      context.details,
-    ].join('\n');
+    const parts = [];
+    if (requirements) {
+      parts.push(context.preamble, '', 'Requirements:', requirements, '');
+    }
+    parts.push(context.details);
+    const prompt = parts.join('\n');
 
     return prompt.replace(/\{today\}/g, today).replace(/\{maxTitleWords\}/g, settings.maxTitleWords || '10');
   }
@@ -185,8 +183,8 @@ function initPrecog(config) {
           }).join('')}
         </ul>
         <div class="precog-actions">
-          <button id="precog-quick-btn" class="precog-btn-primary"${checkedBlockIds.size === 0 ? ' disabled' : ''}>Quick run &#8984;&#8629;</button>
-          <button id="precog-generate-btn" class="precog-btn-secondary"${checkedBlockIds.size === 0 ? ' disabled' : ''}>Generate prompt &#8984;&#8679;&#8629;</button>
+          <button id="precog-quick-btn" class="precog-btn-primary">Quick run &#8984;&#8629;</button>
+          <button id="precog-generate-btn" class="precog-btn-secondary">Generate prompt &#8984;&#8679;&#8629;</button>
         </div>
       `;
 
@@ -225,11 +223,11 @@ function initPrecog(config) {
       }
 
       modal.querySelector('#precog-quick-btn').addEventListener('click', () => {
-        if (checkedBlockIds.size > 0) handleGenerate({ quickCreate: true });
+        handleGenerate({ quickCreate: true });
       });
 
       modal.querySelector('#precog-generate-btn').addEventListener('click', () => {
-        if (checkedBlockIds.size > 0) handleGenerate();
+        handleGenerate();
       });
     }
 
@@ -402,9 +400,7 @@ function initPrecog(config) {
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           customTitle = e.target.value;
-          if (checkedBlockIds.size > 0) {
-            handleGenerate({ quickCreate: !e.shiftKey });
-          }
+          handleGenerate({ quickCreate: !e.shiftKey });
           return;
         }
         return;
@@ -456,9 +452,7 @@ function initPrecog(config) {
       }
 
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        if (checkedBlockIds.size > 0) {
-          handleGenerate({ quickCreate: !e.shiftKey });
-        }
+        handleGenerate({ quickCreate: !e.shiftKey });
         return;
       }
 

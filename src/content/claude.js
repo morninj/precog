@@ -32,62 +32,71 @@
       }
 
       const isChecked = researchToggle.getAttribute('aria-checked') === 'true';
-      if (!isChecked) {
+      if (isChecked) {
+        console.log('[Precog] Research mode already enabled');
+      } else {
         researchToggle.click();
         console.log('[Precog] Enabled Research mode');
-        // Wait for the UI to update
         await new Promise((r) => setTimeout(r, 500));
-      } else {
-        console.log('[Precog] Research mode already enabled');
       }
+      // Close the menu if still open
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await new Promise((r) => setTimeout(r, 300));
     } catch (err) {
       console.warn('[Precog] Failed to enable Research mode:', err.message);
     }
   }
 
-  async function findResearchToggle() {
-    // The Research toggle is a menuitemcheckbox inside a dropdown.
-    // Try to find it directly first (dropdown may already be open).
-    let toggle = findResearchCheckbox();
-    if (toggle) return toggle;
-
-    // Look for the button that opens the model picker/features menu.
-    // It's typically near the chat input area.
-    const buttons = document.querySelectorAll('button[aria-haspopup="menu"], button[aria-haspopup="dialog"]');
-    for (const btn of buttons) {
-      // Click to open the menu
-      btn.click();
-      await new Promise((r) => setTimeout(r, 300));
-
-      toggle = findResearchCheckbox();
-      if (toggle) return toggle;
-
-      // Close if this wasn't the right menu
-      btn.click();
-      await new Promise((r) => setTimeout(r, 100));
-    }
-
-    return null;
-  }
-
-  function findResearchCheckbox() {
-    // Find menuitemcheckbox elements that contain "Research" text
-    const items = document.querySelectorAll('[role="menuitemcheckbox"]');
-    for (const item of items) {
-      if (item.textContent.trim().includes('Research')) {
+  function findResearchItem() {
+    // Look for any menu item containing "Research" text
+    const selectors = '[role="menuitemcheckbox"], [role="menuitem"], [data-testid*="research"]';
+    for (const item of document.querySelectorAll(selectors)) {
+      const text = item.textContent.trim();
+      if (text === 'Research' || text.startsWith('Research')) {
         return item;
       }
     }
     return null;
   }
 
-  async function injectPrompt(prompt, settings, options = {}) {
-    try {
-      if (options.enableResearch) {
-        await enableResearchMode();
+  async function findResearchToggle() {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      // Check if already visible
+      let toggle = findResearchItem();
+      if (toggle) return toggle;
+
+      // Find and click the "+" / "Toggle menu" button near the chat input
+      const menuBtn = document.querySelector('button[aria-label="Toggle menu"]')
+        || document.querySelector('button[aria-haspopup="menu"]');
+      if (menuBtn) {
+        menuBtn.click();
+        await new Promise((r) => setTimeout(r, 500));
+
+        toggle = findResearchItem();
+        if (toggle) return toggle;
+
+        // Close if Research wasn't found
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        await new Promise((r) => setTimeout(r, 200));
       }
 
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+
+    return null;
+  }
+
+  async function injectPrompt(prompt, settings, options = {}) {
+    try {
       const input = await waitForElement('div[data-testid="chat-input"]');
+
+      // Enable research mode before injecting text (so button clicks don't disrupt input)
+      if (options.enableResearch) {
+        await enableResearchMode();
+        // Re-focus input after research mode toggling may have shifted focus
+        input.focus();
+        await new Promise((r) => setTimeout(r, 300));
+      }
 
       input.focus();
 

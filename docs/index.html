@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Precog</title>
+    <meta name="description" content="A Chrome extension that pulls context from any webpage and sends it to Claude with composable prompt building blocks." />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #333;
+        line-height: 1.7;
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+
+      a {
+        color: #4f36c4;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      h1 img {
+        width: 28px;
+        height: 28px;
+        border-radius: 5px;
+      }
+
+      .tagline {
+        color: #666;
+        margin-bottom: 2.5rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      h2 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-top: 2.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        margin-bottom: 1rem;
+      }
+
+      ul,
+      ol {
+        margin-bottom: 1rem;
+        padding-left: 1.25rem;
+      }
+
+      li {
+        margin-bottom: 0.35rem;
+      }
+
+      kbd {
+        background: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 4px;
+        padding: 0.1rem 0.4rem;
+        font-size: 0.85em;
+        font-family: inherit;
+      }
+
+      .install-steps {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .install-steps ol {
+        margin-bottom: 0;
+      }
+      .install-steps li:last-child {
+        margin-bottom: 0;
+      }
+
+      code {
+        background: #f3f4f6;
+        padding: 0.15rem 0.35rem;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+
+      footer {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        font-size: 0.85rem;
+        color: #999;
+      }
+
+      footer a {
+        color: #999;
+      }
+      footer a:hover {
+        color: #666;
+      }
+      footer nav {
+        display: flex;
+        gap: 1.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1><img src="icon.png" alt="" /> Precog</h1>
+    <p class="tagline">An open source Chrome extension that grabs context from the page you're on and sends it to Claude with your instructions.</p>
+
+    <p>
+      Precog extracts structured context from the page you're on and assembles a Claude prompt from modular instruction blocks. It sends the result directly to Claude, replacing the manual workflow of
+      copying content, switching tabs, and writing out instructions each time.
+    </p>
+
+    <img src="screenshot.png" alt="Precog command palette showing building blocks" style="width: 100%; border-radius: 8px; margin: 2rem 0;" />
+
+    <h2>How it works</h2>
+
+    <p>
+      Press <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> on any webpage to open a command palette. Precog reads the current page and presents a set of instruction blocks: summarize, identify TODOs,
+      draft a reply, create an Asana task, search for related context across Gmail and Slack, or do deep research. Blocks can be combined. Precog assembles the page context and selected instructions
+      into a prompt and sends it to Claude.
+    </p>
+
+    <h2>Example: processing an email</h2>
+
+    <p>Open Precog on a Gmail thread and select the following blocks:</p>
+
+    <ul>
+      <li>
+        <strong>Search for deep context</strong>: Claude searches Gmail, Google Drive, and Slack for related threads, documents, and messages, so the response is informed by the full history rather
+        than just the current email.
+      </li>
+      <li><strong>Identify TODOs</strong>: extracts TODOs from the thread. In "advise" mode, it also suggests approaches with confidence levels.</li>
+      <li><strong>Draft a reply</strong>: generates a response based on the thread content and any context found in the search.</li>
+      <li><strong>Create Asana task</strong>: creates a task to track follow-up, with a title, description, and link back to the email.</li>
+    </ul>
+
+    <h2>Supported pages</h2>
+
+    <p>
+      Precog has specific integrations for Gmail, Asana, and Slack. On Gmail it reads the full thread with subjects, senders, and dates. On Asana it pulls the task title and description with
+      formatting and links preserved. On Slack it gets the message text, sender, channel, timestamp, and permalink—you can trigger it from the context menu or the keyboard shortcut.
+    </p>
+
+    <p>On any other page, Precog captures the page title, URL, and any selected text. If nothing is selected, it captures the page content up to a configurable character limit.</p>
+
+    <h2>Install</h2>
+
+    <div class="install-steps">
+      <ol>
+        <li>Download or clone the repo from <a href="https://github.com/morninj/precog">GitHub</a></li>
+        <li>Go to <code>chrome://extensions</code> and turn on Developer mode</li>
+        <li>Click "Load unpacked" and select the <code>src/</code> folder</li>
+      </ol>
+    </div>
+
+    <p>
+      For best results, enable connectors in Claude for Gmail, Google Drive, Slack, Asana, and any other services relevant to the context being processed. This allows Claude to search across those
+      platforms when using the "search for deep context" block.
+    </p>
+
+    <p>The <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> keyboard shortcut is configurable at <code>chrome://extensions/shortcuts</code>.</p>
+
+    <h2>Settings</h2>
+
+    <p>
+      Right-click the extension icon and choose Options to configure email thread scope, max length for auto-generated Asana task titles, page content character limit for generic pages, and template
+      text for each prompt block.
+    </p>
+
+    <h2>Privacy</h2>
+
+    <p>
+      Precog runs entirely in the browser. There is no server, no analytics, and no tracking. Data is only sent to Claude when a prompt is explicitly submitted. Settings are stored in Chrome's sync
+      storage. See the <a href="privacy.html">privacy policy</a>.
+    </p>
+
+    <h2>Source</h2>
+
+    <p>Precog is open source under the Apache 2.0 license. Source code and issue tracker are on <a href="https://github.com/morninj/precog">GitHub</a>.</p>
+
+    <h2>About</h2>
+
+    <p>Built by <a href="https://www.mornin.org/">Joe Mornin</a>.</p>
+
+    <footer>
+      <nav>
+        <a href="https://github.com/morninj/precog">GitHub</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
+    </footer>
+  </body>
+</html>

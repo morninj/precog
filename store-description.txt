@@ -1,9 +1,18 @@
-Precog is an open-source, agentic Chrome extension that pulls context from any webpage and sends it to Claude with your instructions. You can build prompts from modular blocks with no copy-pasting or context switching.
+Precog extracts structured context from the page you're on and assembles a Claude prompt from modular instruction blocks.
 
-It has deep integrations for Gmail, Google Drive, Asana, and Slack, with site-specific extraction that captures structured data like email threads, task descriptions, and message details. On any other page, it captures the page title, URL, and your selected text or page content.
+Press Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux) on any webpage to open a command palette. Precog reads the current page and presents a set of instruction blocks: summarize, identify TODOs, draft a reply, create an Asana task, search for related context across Gmail and Slack, or do deep research. Blocks can be combined. Precog assembles the page context and selected instructions into a prompt and sends it to Claude.
 
-Select what you need: create Asana tasks, summarize threads, identify TODOs with recommended approaches, search for deep context across Gmail, Google Drive, and Slack, draft replies, or do deep research. Quick run sends your prompt straight to Claude, or you can review and edit it first.
+Example: open Precog on a Gmail thread and select the following blocks:
 
-Precog runs entirely in your browser. It's safe, open source, and never sends your data anywhere except to Claude when you choose to. No tracking, no analytics, no third-party servers.
+- Search for deep context: Claude searches Gmail, Google Drive, and Slack for related threads, documents, and messages, so the response is informed by the full history rather than just the current email.
+- Identify TODOs: extracts TODOs from the thread. In "advise" mode, it also suggests approaches with confidence levels.
+- Draft a reply: generates a response based on the thread content and any context found in the search.
+- Create Asana task: creates a task to track follow-up, with a title, description, and link back to the email.
 
-https://github.com/morninj/precog
+Precog has specific integrations for Gmail, Asana, and Slack. On Gmail it reads the full thread with subjects, senders, and dates. On Asana it pulls the task title and description with formatting and links preserved. On Slack it gets the message text, sender, channel, timestamp, and permalink. On any other page, Precog captures the page title, URL, and any selected text or page content.
+
+For best results, enable connectors in Claude for Gmail, Google Drive, Slack, Asana, and any other services relevant to the context being processed.
+
+Precog runs entirely in the browser. There is no server, no analytics, and no tracking. Data is only sent to Claude when a prompt is explicitly submitted.
+
+Open source (Apache 2.0): https://precog.cc

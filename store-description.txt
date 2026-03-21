@@ -1,6 +1,6 @@
 Precog extracts structured context from the page you're on and assembles a Claude prompt from modular instruction blocks.
 
-Press Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux) on any webpage to open a command palette. Precog reads the current page and presents a set of instruction blocks: summarize, identify TODOs, draft a reply, create an Asana task, search for related context across Gmail and Slack, or do deep research. Blocks can be combined. Precog assembles the page context and selected instructions into a prompt and sends it to Claude.
+Press Cmd+Shift+P (Mac) or Ctrl+Shift+P (Windows/Linux) on any webpage to open a command palette. Precog reads the current page and presents a set of instruction blocks: summarize, identify TODOs, draft a reply, create an Asana task, do deep research, or search for related context across Gmail, Google Drive, Slack, and other connected services. Blocks can be combined. Precog assembles the page context and selected instructions into a prompt and sends it to Claude.
 
 Example: open Precog on a Gmail thread and select the following blocks:
 

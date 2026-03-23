@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Precog",
-  "version": "0.2.0.10",
+  "version": "0.2.0.11",
   "description": "An open source Chrome extension that extracts page context, assembles a prompt, and runs it in Claude.",
   "permissions": [
     "activeTab",

@@ -189,9 +189,32 @@
     });
   }
 
+  // Auto-click "Continue" when Claude reaches its tool-use limit
+  function watchForContinueButton() {
+    const clicked = new WeakSet();
+
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll('[data-testid="message-warning"]').forEach((warning) => {
+        if (!warning.textContent.includes('tool-use limit')) return;
+        const btn = warning.querySelector('button');
+        if (btn && !clicked.has(btn)) {
+          clicked.add(btn);
+          console.log('[Precog] Auto-clicking Continue button');
+          btn.click();
+        }
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
   if (document.readyState === 'complete') {
     checkForPendingData();
+    watchForContinueButton();
   } else {
-    window.addEventListener('load', checkForPendingData);
+    window.addEventListener('load', () => {
+      checkForPendingData();
+      watchForContinueButton();
+    });
   }
 })();

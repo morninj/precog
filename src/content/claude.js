@@ -208,13 +208,45 @@
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
+  // Auto-click "Retry" when Claude's response is interrupted
+  function watchForRetryButton() {
+    const clicked = new WeakSet();
+    const INTERRUPTED = "Claude\u2019s response was interrupted";
+    const INTERRUPTED_ASCII = "Claude's response was interrupted";
+
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll('button').forEach((btn) => {
+        if (btn.textContent.trim() !== 'Retry') return;
+        if (clicked.has(btn)) return;
+        // Walk up to find an ancestor containing the interrupted-message text
+        let node = btn.parentElement;
+        let matched = false;
+        for (let i = 0; i < 6 && node; i++, node = node.parentElement) {
+          const text = node.textContent;
+          if (text && (text.includes(INTERRUPTED) || text.includes(INTERRUPTED_ASCII))) {
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) return;
+        clicked.add(btn);
+        console.log('[Precog] Auto-clicking Retry button');
+        btn.click();
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
   if (document.readyState === 'complete') {
     checkForPendingData();
     watchForContinueButton();
+    watchForRetryButton();
   } else {
     window.addEventListener('load', () => {
       checkForPendingData();
       watchForContinueButton();
+      watchForRetryButton();
     });
   }
 })();

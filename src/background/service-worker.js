@@ -1,6 +1,24 @@
 // Holds the payload to pass to the Claude content script once the tab is ready
 let pendingPayload = null;
 
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'toggle-overlay',
+    title: 'Open Precog',
+    contexts: ['action'],
+  });
+});
+
+chrome.contextMenus.onClicked.addListener((info) => {
+  if (info.menuItemId === 'toggle-overlay') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'TOGGLE_OVERLAY' });
+      }
+    });
+  }
+});
+
 // Forward keyboard shortcut command to active tab's content script
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'toggle-overlay') {

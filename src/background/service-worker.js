@@ -27,6 +27,12 @@ chrome.commands.onCommand.addListener((command) => {
         chrome.tabs.sendMessage(tabs[0].id, { type: 'TOGGLE_OVERLAY' });
       }
     });
+  } else if (command === 'copy-thread-link') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_THREAD_LINK' });
+      }
+    });
   }
 });
 

@@ -20,6 +20,12 @@
         "mac": "Command+Shift+P"
       },
       "description": "Open Precog command palette"
+    },
+    "copy-thread-link": {
+      "suggested_key": {
+        "default": "Alt+Shift+C"
+      },
+      "description": "Copy Gmail thread link for Claude"
     }
   },
   "content_scripts": [

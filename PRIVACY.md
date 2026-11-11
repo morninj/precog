@@ -24,7 +24,6 @@ Precog stores user preferences (email data scope, Asana task title length, page 
 - **contextMenus**: Adds right-click menu items for opening Precog and for opening all links in selected text.
 - **scripting**: When the user chooses a link-opening item from the right-click menu, reads the links in the current text selection so they can be opened. Nothing is stored or transmitted.
 - **storage**: Saves user preferences in Chrome's sync storage.
-- **tabs**: Opens a Claude tab to deliver the assembled prompt and detects whether one is already open to avoid duplicates.
 - **tabGroups**: Groups the source page tab with the Claude tab for easy navigation.
 
 ## Host permissions

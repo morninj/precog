@@ -8,7 +8,6 @@
     "contextMenus",
     "scripting",
     "storage",
-    "tabs",
     "tabGroups"
   ],
   "background": {

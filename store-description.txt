@@ -11,6 +11,8 @@ Example: open Precog on a Gmail thread and select the following blocks:
 
 Precog has specific integrations for Gmail, Asana, and Slack. On Gmail it reads the full thread with subjects, senders, and dates. On Asana it pulls the task title and description with formatting and links preserved. On Slack it gets the message text, sender, channel, timestamp, and permalink. On any other page, Precog captures the page title, URL, and any selected text or page content.
 
+Precog also adds a few shortcuts. Select text that contains links, right-click, and choose to open all of them in new tabs, in separate new windows, or as tabs in one new window. On Gmail, press Alt+Shift+C to copy a link to the current thread to paste into Claude.
+
 For best results, enable connectors in Claude for Gmail, Google Drive, Slack, Asana, and any other services relevant to the context being processed.
 
 Precog runs entirely in the browser. There is no server, no analytics, and no tracking. Data is only sent to Claude when a prompt is explicitly submitted.

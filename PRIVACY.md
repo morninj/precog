@@ -21,10 +21,11 @@ Precog stores user preferences (email data scope, Asana task title length, page 
 ## Permissions
 
 - **activeTab**: Reads the content of the current page when the user activates the extension.
-- **contextMenus**: Adds right-click menu items for opening Precog and for opening all links in selected text.
+- **contextMenus**: Adds right-click menu items for opening Precog, for copying the URLs of the tabs in a window, and for opening all links in selected text.
 - **scripting**: When the user chooses a link-opening item from the right-click menu, reads the links in the current text selection so they can be opened. Nothing is stored or transmitted.
 - **storage**: Saves user preferences in Chrome's sync storage.
 - **tabGroups**: Groups the source page tab with the Claude tab for easy navigation.
+- **tabs** (optional, requested the first time it is needed): When the user chooses "Copy URLs of all tabs in this window" from a right-click menu or presses its keyboard shortcut, reads the URLs of the tabs in that window and copies them to the clipboard. Nothing is stored or transmitted.
 
 ## Host permissions
 

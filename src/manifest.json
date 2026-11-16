@@ -10,6 +10,7 @@
     "storage",
     "tabGroups"
   ],
+  "optional_permissions": ["tabs"],
   "background": {
     "service_worker": "background/service-worker.js"
   },
@@ -23,9 +24,17 @@
     },
     "copy-thread-link": {
       "suggested_key": {
-        "default": "Alt+Shift+C"
+        "default": "Alt+Shift+C",
+        "mac": "Command+MacCtrl+C"
       },
       "description": "Copy Gmail thread link for Claude"
+    },
+    "copy-window-urls": {
+      "suggested_key": {
+        "default": "Alt+Shift+T",
+        "mac": "Command+MacCtrl+T"
+      },
+      "description": "Copy URLs of all tabs in this window"
     }
   },
   "content_scripts": [

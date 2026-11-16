@@ -138,10 +138,11 @@
     <h2>Permissions</h2>
     <ul>
       <li><strong>activeTab</strong>—reads the content of the current page when the user activates the extension.</li>
-      <li><strong>contextMenus</strong>—adds right-click menu items for opening Precog and for opening all links in selected text.</li>
+      <li><strong>contextMenus</strong>—adds right-click menu items for opening Precog, for copying the URLs of the tabs in a window, and for opening all links in selected text.</li>
       <li><strong>scripting</strong>—when the user chooses a link-opening item from the right-click menu, reads the links in the current text selection so they can be opened. Nothing is stored or transmitted.</li>
       <li><strong>storage</strong>—saves user preferences in Chrome's sync storage.</li>
       <li><strong>tabGroups</strong>—groups the source page tab with the Claude tab for easy navigation.</li>
+      <li><strong>tabs</strong> (optional, requested the first time it is needed)—when the user chooses "Copy URLs of all tabs in this window" from a right-click menu or presses its keyboard shortcut, reads the URLs of the tabs in that window and copies them to the clipboard. Nothing is stored or transmitted.</li>
     </ul>
 
     <h2>Host permissions</h2>

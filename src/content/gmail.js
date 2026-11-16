@@ -191,7 +191,7 @@ window.__precogModules.gmail = {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'precog-copy-link-btn';
-      btn.title = `Copy thread link for Claude (${/Mac/.test(navigator.platform) ? '⌥⇧C' : 'Alt+Shift+C'})`;
+      btn.title = `Copy thread link for Claude (${/Mac/.test(navigator.platform) ? '⌃⌘C' : 'Alt+Shift+C'})`;
       btn.setAttribute('aria-label', 'Copy thread link for Claude');
       btn.innerHTML = LINK_ICON;
       btn.addEventListener('click', async (e) => {
@@ -233,10 +233,17 @@ window.__precogModules.gmail = {
     }).observe(document.body, { childList: true, subtree: true });
     injectCopyButtons();
 
-    // Keyboard shortcut is a Chrome command (Alt+Shift+C by default, rebindable
+    // Keyboard shortcut is a Chrome command (Ctrl+Cmd+C on Mac, Alt+Shift+C elsewhere, rebindable
     // at chrome://extensions/shortcuts), forwarded by the service worker
-    chrome.runtime.onMessage.addListener((message) => {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === 'COPY_THREAD_LINK') copyThreadLink(null);
+      // Service worker collecting URLs for every tab in the window. Only a
+      // visible heading counts: Gmail can leave a hidden one behind after you
+      // go back to the list.
+      if (message.type === 'GET_THREAD_LINK') {
+        const h2 = Array.from(document.querySelectorAll('h2[data-legacy-thread-id]')).find(isVisible);
+        sendResponse({ link: h2 ? buildThreadLink(h2) : null });
+      }
     });
 
     initPrecog({

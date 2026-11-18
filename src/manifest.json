@@ -35,6 +35,13 @@
         "mac": "Command+MacCtrl+T"
       },
       "description": "Copy URLs of all tabs in this window"
+    },
+    "open-links-tabs-new-window": {
+      "suggested_key": {
+        "default": "Alt+Shift+W",
+        "mac": "Command+MacCtrl+W"
+      },
+      "description": "Open all links in the selection as tabs in a new window"
     }
   },
   "content_scripts": [

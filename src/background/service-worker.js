@@ -52,21 +52,31 @@ function getSelectedLinks() {
 }
 
 async function openSelectedLinks(info, tab, mode) {
-  let urls = [];
-  try {
-    const [result] = await chrome.scripting.executeScript({
-      target: { tabId: tab.id, frameIds: [info.frameId ?? 0] },
-      func: getSelectedLinks,
-    });
-    urls = result?.result || [];
-  } catch (e) {
-    console.warn('[Precog] Could not read selection:', e);
+  // The context menu says which frame was clicked. The keyboard shortcut
+  // doesn't, so read the top frame and then every frame, as separate calls:
+  // one frame the extension can't script must not lose the others' results.
+  const targets =
+    info.frameId != null
+      ? [{ tabId: tab.id, frameIds: [info.frameId] }]
+      : [{ tabId: tab.id }, { tabId: tab.id, allFrames: true }];
+  const found = [];
+  for (const target of targets) {
+    try {
+      const results = await chrome.scripting.executeScript({ target, func: getSelectedLinks });
+      for (const r of results) found.push(...(r?.result || []));
+    } catch (e) {
+      console.warn('[Precog] Could not read selection:', e);
+    }
   }
+  let urls = [...new Set(found)];
   // Fall back to bare URLs in the selection text (e.g. on restricted pages)
   if (urls.length === 0 && info.selectionText) {
     urls = [...new Set(info.selectionText.match(/https?:\/\/[^\s<>"'()\[\]]+/g) || [])];
   }
-  if (urls.length === 0) return;
+  if (urls.length === 0) {
+    console.warn('[Precog] No links found in the selection.');
+    return;
+  }
 
   if (mode === 'tabs') {
     urls.forEach((url, i) => {
@@ -167,6 +177,12 @@ async function copyWindowUrls(tab) {
   }
 }
 
+async function openSelectedLinksFromShortcut(tab) {
+  // Older Chrome versions don't pass the tab to keyboard-command listeners
+  if (!tab) [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab) openSelectedLinks({}, tab, 'tabs-new-window');
+}
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'copy-window-urls') return copyWindowUrls(tab);
   if (info.menuItemId === 'open-links-tabs') return openSelectedLinks(info, tab, 'tabs');
@@ -185,6 +201,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 chrome.commands.onCommand.addListener((command, tab) => {
   if (command === 'copy-window-urls') {
     copyWindowUrls(tab);
+  } else if (command === 'open-links-tabs-new-window') {
+    openSelectedLinksFromShortcut(tab);
   } else if (command === 'toggle-overlay') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]?.id) {

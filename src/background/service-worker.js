@@ -1,3 +1,5 @@
+importScripts('quick-task.js');
+
 // Holds the payload to pass to the Claude content script once the tab is ready
 let pendingPayload = null;
 
@@ -199,7 +201,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Forward keyboard shortcut command to active tab's content script
 chrome.commands.onCommand.addListener((command, tab) => {
-  if (command === 'copy-window-urls') {
+  if (command === 'create-asana-task') {
+    createQuickAsanaTask(tab);
+  } else if (command === 'copy-window-urls') {
     copyWindowUrls(tab);
   } else if (command === 'open-links-tabs-new-window') {
     openSelectedLinksFromShortcut(tab);
@@ -221,20 +225,7 @@ chrome.commands.onCommand.addListener((command, tab) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SEND_TO_CLAUDE') {
     pendingPayload = message.payload;
-    const sourceTabId = sender.tab?.id;
-
-    if (sourceTabId && message.payload.source === 'gmail') {
-      // Duplicate the Gmail tab and group it with the new Claude tab
-      chrome.tabs.duplicate(sourceTabId, (dupTab) => {
-        chrome.tabs.create({ url: 'https://claude.ai/new' }, (claudeTab) => {
-          chrome.tabs.group({ tabIds: [dupTab.id, claudeTab.id] }, (groupId) => {
-            chrome.tabGroups.update(groupId, { title: 'Precog', color: 'purple' });
-          });
-        });
-      });
-    } else {
-      chrome.tabs.create({ url: 'https://claude.ai/new' });
-    }
+    chrome.tabs.create({ url: 'https://claude.ai/new' });
   }
 
   if (message.type === 'CLAUDE_READY') {

@@ -7,10 +7,10 @@
     "activeTab",
     "contextMenus",
     "scripting",
-    "storage",
-    "tabGroups"
+    "storage"
   ],
-  "optional_permissions": ["tabs"],
+  "optional_permissions": ["tabs", "nativeMessaging"],
+  "optional_host_permissions": ["https://app.asana.com/*", "https://api.anthropic.com/*"],
   "background": {
     "service_worker": "background/service-worker.js"
   },
@@ -42,6 +42,9 @@
         "mac": "Command+MacCtrl+W"
       },
       "description": "Open all links in the selection as tabs in a new window"
+    },
+    "create-asana-task": {
+      "description": "Create an Asana task from this page"
     }
   },
   "content_scripts": [

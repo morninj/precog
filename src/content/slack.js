@@ -52,6 +52,8 @@ window.__precogModules.slack = {
         || '';
     }
 
+    // The message's permalink: the same URL Slack's "Copy link" produces,
+    // which is what the timestamp links to
     function extractMessageLink(msgEl) {
       if (!msgEl) return '';
       const tsLink = msgEl.querySelector('a.c-timestamp')
@@ -64,6 +66,29 @@ window.__precogModules.slack = {
       }
       return window.location.href;
     }
+
+    // Link to the conversation itself: the permalink minus the message part,
+    // or failing that the page URL minus any open thread
+    function extractChannelLink(messageLink) {
+      const fromPermalink = messageLink.match(/^https:\/\/[^/]+\/archives\/[A-Z0-9]+/);
+      if (fromPermalink) return fromPermalink[0];
+      const fromClient = window.location.href.match(/^https:\/\/[^/]+\/client\/[A-Z0-9]+\/[A-Z0-9]+/);
+      return fromClient ? fromClient[0] : window.location.href;
+    }
+
+    // Remember the message the pointer was last over, so a keyboard shortcut
+    // still knows which message is meant once the hover toolbar has gone
+    let lastHoveredMessage = null;
+    document.addEventListener(
+      'mouseover',
+      (e) => {
+        const msg = e.target.closest?.('.c-message_kit__message, [data-qa="virtual-list-item"]');
+        if (msg && msg.querySelector('[data-qa="message-text"], .p-rich_text_section')) {
+          lastHoveredMessage = msg;
+        }
+      },
+      { passive: true }
+    );
 
     function extractChannelName() {
       const header = document.querySelector('[data-qa="channel_name"]')
@@ -81,6 +106,7 @@ window.__precogModules.slack = {
         timestamp: extractTimestamp(msgEl),
         link: extractMessageLink(msgEl),
         channel: extractChannelName(),
+        channelLink: extractChannelLink(extractMessageLink(msgEl)),
       };
     }
 
@@ -200,6 +226,24 @@ window.__precogModules.slack = {
         return true;
       },
       extractData: () => capturedMessageData,
+      // Quick Asana tasks use the hovered (or last hovered) message and link
+      // to it; with none, the shared fallback uses the page
+      extractForTask() {
+        const msgEl = findActiveMessage() || (lastHoveredMessage?.isConnected ? lastHoveredMessage : null);
+        capturedMessageData = msgEl ? extractFromMessageEl(msgEl) : null;
+        return capturedMessageData;
+      },
+      getTaskLink: () => capturedMessageData?.link || null,
+      // The task description quotes the message and links to its channel
+      getTaskExtras() {
+        const data = capturedMessageData;
+        if (!data) return null;
+        return {
+          quote: data.text,
+          quoteBy: [data.sender, data.timestamp].filter(Boolean).join(', '),
+          links: [{ label: 'Channel', text: data.channel || 'Open in Slack', url: data.channelLink }],
+        };
+      },
       buildContext: buildSlackContext,
       availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
       defaultBlockIds: ['asana_task', 'summarize', 'identify_todos'],

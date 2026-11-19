@@ -20,6 +20,7 @@ Precog uses a modular architecture. A universal content script loads on every pa
 src/
   manifest.json
   background/service-worker.js    # Message passing between content scripts
+  background/quick-task.js        # Quick Asana task (Anthropic API + Asana API)
   content/
     shared.js                     # Overlay UI, block definitions, prompt assembly
     loader.js                     # Module dispatcher (selects by hostname)
@@ -31,6 +32,7 @@ src/
     precog.css                    # Shared overlay styles
   options/                        # Settings page
   icons/                          # Extension icons
+helper/                           # Optional local helper for Claude API calls (see helper/README.md)
 build.sh                          # Packages src/ into a .zip for distribution
 ```
 

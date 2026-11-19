@@ -246,21 +246,30 @@ window.__precogModules.gmail = {
       }
     });
 
+    // Collapsed messages aren't in the DOM in full, so they'd be left out
+    function confirmCollapsedMessages() {
+      const collapsed = document.querySelectorAll('.adx[aria-expanded="false"], .kv[aria-expanded="false"]');
+      if (collapsed.length > 0) {
+        return confirm(`Some messages are collapsed and won't be included. You can press ; in Gmail to expand all.\n\nContinue anyway?`);
+      }
+      return true;
+    }
+
     initPrecog({
       source: 'gmail',
       canActivate: () => !!document.querySelector('h2[data-thread-perm-id]'),
       extractData: extractEmailData,
+      // Quick Asana tasks link to the thread with the Claude-friendly URL
+      getTaskLink() {
+        const h2 = Array.from(document.querySelectorAll('h2[data-legacy-thread-id]')).find(isVisible);
+        return h2 ? buildThreadLink(h2) : null;
+      },
       buildContext: buildEmailContext,
       availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
       defaultBlockIds: ['asana_task', 'summarize', 'identify_todos'],
       noDataMessage: '[Precog] Open an email first — no email data found on this page.',
-      beforeShow() {
-        const collapsed = document.querySelectorAll('.adx[aria-expanded="false"], .kv[aria-expanded="false"]');
-        if (collapsed.length > 0) {
-          return confirm(`Some messages are collapsed and won't be included. You can press ; in Gmail to expand all.\n\nContinue anyway?`);
-        }
-        return true;
-      },
+      beforeShow: confirmCollapsedMessages,
+      confirmTask: confirmCollapsedMessages,
     });
   },
 };

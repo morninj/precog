@@ -82,7 +82,8 @@ const ALL_BLOCKS = [
   },
 ];
 
-// config: { extractData, buildContext, availableBlockIds, defaultBlockIds, noDataMessage }
+// config: { extractData, buildContext, availableBlockIds, defaultBlockIds, noDataMessage,
+//           extractForTask?, getTaskLink?, getTaskExtras?, confirmTask? }
 function initPrecog(config) {
   const blocks = ALL_BLOCKS.filter((b) => config.availableBlockIds.includes(b.id));
 
@@ -358,6 +359,51 @@ function initPrecog(config) {
         showOverlay();
       }
     }
+  });
+
+  // Quick Asana task: the service worker asks for this page's context.
+  // Modules can supply extractForTask (when extractData depends on state the
+  // overlay normally captures) and getTaskLink (a better link than the URL).
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type !== 'GET_TASK_CONTEXT') return;
+    // A module can warn about something (e.g. collapsed Gmail messages) and
+    // let the user back out before anything is sent
+    if (config.confirmTask && !config.confirmTask()) {
+      sendResponse({ cancelled: true });
+      return;
+    }
+    chrome.storage.sync.get({ emailDataScope: 'full', genericPageMaxChars: '20000' }, (settings) => {
+      let details = '';
+      try {
+        const data = config.extractForTask ? config.extractForTask() : config.extractData();
+        if (data) details = config.buildContext(data, settings).details;
+      } catch (e) {
+        console.warn('[Precog] Could not extract page context:', e);
+      }
+      // The site module had nothing to offer (no thread, task or message
+      // open), so fall back to the selection or the page text
+      if (!details) {
+        const maxChars = parseInt(settings.genericPageMaxChars || '20000', 10);
+        const selected = window.getSelection()?.toString()?.trim() || '';
+        const text = selected || (document.body.innerText || '').trim();
+        const lines = ['Page details:', `- Title: ${document.title}`, `- URL: ${window.location.href}`];
+        if (text) {
+          lines.push(
+            selected ? '- Selected text:' : '- Page content:',
+            text.length > maxChars ? text.substring(0, maxChars) + '...' : text
+          );
+        }
+        details = lines.join('\n');
+      }
+      sendResponse({
+        source: config.source,
+        url: config.getTaskLink?.() || window.location.href,
+        details,
+        // Optional { quote, quoteBy, links: [{ label, text, url }] } for the description
+        extras: config.getTaskExtras?.() || null,
+      });
+    });
+    return true; // keep the channel open for the async response
   });
 
   return { showOverlay, hideOverlay };

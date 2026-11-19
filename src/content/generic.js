@@ -50,6 +50,12 @@ window.__precogModules.generic = {
         return true;
       },
       extractData: extractPageData,
+      // No overlay opens for a quick Asana task, so capture here instead
+      extractForTask() {
+        capturedSelection = window.getSelection()?.toString()?.trim() || '';
+        capturedBodyText = capturedSelection ? '' : document.body.innerText || '';
+        return extractPageData();
+      },
       buildContext: buildPageContext,
       availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
       defaultBlockIds: ['summarize', 'identify_todos'],

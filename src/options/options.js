@@ -123,3 +123,111 @@ saveBtn.addEventListener('click', () => {
     }
   );
 });
+
+// --- Quick Asana task ---
+// Kept in local (not synced) storage: the keys are secrets and the style
+// guide can exceed sync storage's per-item size limit.
+const ASANA_ORIGIN = 'https://app.asana.com/*';
+const ANTHROPIC_ORIGIN = 'https://api.anthropic.com/*';
+const QUICK_TASK_DEFAULTS = {
+  asanaToken: '',
+  anthropicKey: '',
+  claudeConnection: 'direct',
+  quickTaskModel: 'claude-sonnet-5-5',
+  asanaWorkspaceGid: '',
+  asanaWorkspaceName: '',
+  asanaSectionName: 'Triage',
+  quickTaskGuide: '',
+};
+
+const asanaTokenEl = document.getElementById('asanaToken');
+const anthropicKeyEl = document.getElementById('anthropicKey');
+const claudeConnectionEl = document.getElementById('claudeConnection');
+const anthropicKeySettingEl = document.getElementById('anthropicKeySetting');
+const quickTaskModelEl = document.getElementById('quickTaskModel');
+
+// The key field only applies when calling the API from the browser
+function syncConnectionUi() {
+  anthropicKeySettingEl.hidden = claudeConnectionEl.value === 'helper';
+}
+claudeConnectionEl.addEventListener('change', syncConnectionUi);
+const workspaceEl = document.getElementById('asanaWorkspaceGid');
+const sectionNameEl = document.getElementById('asanaSectionName');
+const quickTaskGuideEl = document.getElementById('quickTaskGuide');
+const loadWorkspacesBtn = document.getElementById('loadWorkspaces');
+const workspaceStatusEl = document.getElementById('workspaceStatus');
+
+function setWorkspaceOptions(workspaces, selectedGid) {
+  workspaceEl.textContent = '';
+  if (workspaces.length === 0) workspaces = [{ gid: '', name: 'Load workspaces to choose one' }];
+  for (const ws of workspaces) {
+    const option = document.createElement('option');
+    option.value = ws.gid;
+    option.textContent = ws.name;
+    workspaceEl.appendChild(option);
+  }
+  if (selectedGid) workspaceEl.value = selectedGid;
+}
+
+chrome.storage.local.get(QUICK_TASK_DEFAULTS, (s) => {
+  asanaTokenEl.value = s.asanaToken;
+  anthropicKeyEl.value = s.anthropicKey;
+  claudeConnectionEl.value = s.claudeConnection;
+  syncConnectionUi();
+  quickTaskModelEl.value = s.quickTaskModel;
+  sectionNameEl.value = s.asanaSectionName;
+  quickTaskGuideEl.value = s.quickTaskGuide;
+  setWorkspaceOptions(
+    s.asanaWorkspaceGid ? [{ gid: s.asanaWorkspaceGid, name: s.asanaWorkspaceName || s.asanaWorkspaceGid }] : [],
+    s.asanaWorkspaceGid
+  );
+});
+
+loadWorkspacesBtn.addEventListener('click', async () => {
+  const token = asanaTokenEl.value.trim();
+  if (!token) {
+    workspaceStatusEl.textContent = 'Enter the Asana token first.';
+    return;
+  }
+  workspaceStatusEl.textContent = 'Loading…';
+  try {
+    // Must be the first await so it runs inside the click's user gesture
+    const granted = await chrome.permissions.request({ origins: [ASANA_ORIGIN] });
+    if (!granted) throw new Error('Permission to reach Asana was not granted.');
+    const res = await fetch('https://app.asana.com/api/1.0/workspaces?opt_fields=name&limit=100', {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.errors?.[0]?.message || `Asana returned ${res.status}`);
+    setWorkspaceOptions(json.data, workspaceEl.value);
+    workspaceStatusEl.textContent = `${json.data.length} found. Choose one, then Save.`;
+  } catch (e) {
+    workspaceStatusEl.textContent = e.message;
+  }
+});
+
+saveBtn.addEventListener('click', () => {
+  const asanaToken = asanaTokenEl.value.trim();
+  const useHelper = claudeConnectionEl.value === 'helper';
+  // With the helper, the key lives in the Keychain, so don't keep a copy here
+  const anthropicKey = useHelper ? '' : anthropicKeyEl.value.trim();
+  // Ask only for what the chosen setup needs, and only once it's being set up
+  if (asanaToken || anthropicKey) {
+    chrome.permissions.request(
+      useHelper
+        ? { origins: [ASANA_ORIGIN], permissions: ['nativeMessaging'] }
+        : { origins: [ASANA_ORIGIN, ANTHROPIC_ORIGIN] }
+    );
+  }
+  if (useHelper) anthropicKeyEl.value = '';
+  chrome.storage.local.set({
+    asanaToken,
+    anthropicKey,
+    claudeConnection: claudeConnectionEl.value,
+    quickTaskModel: quickTaskModelEl.value,
+    asanaWorkspaceGid: workspaceEl.value,
+    asanaWorkspaceName: workspaceEl.selectedOptions[0]?.textContent || '',
+    asanaSectionName: sectionNameEl.value.trim() || 'Triage',
+    quickTaskGuide: quickTaskGuideEl.value,
+  });
+});

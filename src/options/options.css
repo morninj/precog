@@ -44,6 +44,8 @@ h2 {
   margin-bottom: 6px;
 }
 
+.setting input[type='text'],
+.setting input[type='password'],
 .setting select {
   width: 100%;
   padding: 8px 12px;

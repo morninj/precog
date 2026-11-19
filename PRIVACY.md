@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** March 21, 2026
+**Last updated:** November 18, 2026
 
 Precog is an open source Chrome extension. This policy explains how it handles your data.
 
@@ -12,11 +12,11 @@ Content scripts run on all http and https pages to enable the keyboard shortcut 
 
 ## Where your data goes
 
-Page content is sent only to Claude (claude.ai) when you choose to send a prompt. Precog does not send data anywhere else. There are no analytics, telemetry, or third-party services.
+Page content is sent to Claude (claude.ai) when you choose to send a prompt. If you set up the optional quick Asana task feature, then each time you press its shortcut, the current page's content is sent to the Anthropic API (to draft the task) using your own API key, either directly or through the optional local helper described below, and the drafted task (title, a one-line summary, and the page link) is sent to the Asana API using your own access token. Precog does not send data anywhere else. There are no analytics, telemetry, or Precog servers.
 
 ## What Precog stores
 
-Precog stores user preferences (email data scope, Asana task title length, page content character limit, and custom block templates) using Chrome's built-in sync storage. No personal data or page content is stored.
+Precog stores user preferences (email data scope, Asana task title length, page content character limit, and custom block templates) using Chrome's built-in sync storage. No page content is stored. If you set up the quick Asana task feature, your Asana access token, Anthropic API key, chosen workspace, and task style guide are stored in Chrome's local storage on this device (not synced) and are sent only to Asana and Anthropic respectively. If you use the optional local helper, the Anthropic API key is kept in your macOS Keychain instead of in the browser.
 
 ## Permissions
 
@@ -24,12 +24,12 @@ Precog stores user preferences (email data scope, Asana task title length, page 
 - **contextMenus**: Adds right-click menu items for opening Precog, for copying the URLs of the tabs in a window, and for opening all links in selected text.
 - **scripting**: When the user chooses a link-opening item from the right-click menu or presses its keyboard shortcut, reads the links in the current text selection so they can be opened. Nothing is stored or transmitted.
 - **storage**: Saves user preferences in Chrome's sync storage.
-- **tabGroups**: Groups the source page tab with the Claude tab for easy navigation.
+- **nativeMessaging** (optional, requested only if you choose the local helper for quick Asana tasks): Lets Precog hand the Claude request to a helper script you install on your own computer, which calls the Anthropic API. Nothing else is exchanged with it.
 - **tabs** (optional, requested the first time it is needed): When the user chooses "Copy URLs of all tabs in this window" from a right-click menu or presses its keyboard shortcut, reads the URLs of the tabs in that window and copies them to the clipboard. Nothing is stored or transmitted.
 
 ## Host permissions
 
-Content scripts match all http and https URLs so the extension can be activated on any page. On claude.ai, a separate content script delivers the assembled prompt. No data is accessed until the user explicitly triggers the extension.
+Content scripts match all http and https URLs so the extension can be activated on any page. On claude.ai, a separate content script delivers the assembled prompt. No data is accessed until the user explicitly triggers the extension. Access to app.asana.com and api.anthropic.com is optional and is requested only when you set up the quick Asana task feature; it is used solely to call those two APIs.
 
 ## Open source
 

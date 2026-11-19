@@ -35,6 +35,58 @@
 
     <div id="block-editors"></div>
 
+    <h2>Quick Asana task</h2>
+    <p class="hint" style="margin-bottom: 16px;">Creates an Asana task from the current page with one keyboard shortcut. Claude drafts the title and a one-line summary through the Anthropic API, and the task is created through the Asana API. Assign the shortcut at <code>chrome://extensions/shortcuts</code> ("Create an Asana task from this page"). Keys are stored only in this browser and are sent only to Asana and Anthropic.</p>
+
+    <div class="setting">
+      <label for="asanaToken">Asana personal access token</label>
+      <input type="password" id="asanaToken" autocomplete="off" spellcheck="false">
+      <p class="hint">Create one in the Asana developer console (app.asana.com/0/my-apps).</p>
+    </div>
+
+    <div class="setting">
+      <label for="asanaWorkspaceGid">Asana workspace</label>
+      <select id="asanaWorkspaceGid"></select>
+      <button class="btn-link" id="loadWorkspaces" type="button">Load workspaces</button>
+      <span class="hint" id="workspaceStatus"></span>
+      <p class="hint">Tasks are only ever created in this workspace.</p>
+    </div>
+
+    <div class="setting">
+      <label for="asanaSectionName">My Tasks section</label>
+      <input type="text" id="asanaSectionName" value="Triage">
+      <p class="hint">New tasks are filed in this section of your My Tasks.</p>
+    </div>
+
+    <div class="setting">
+      <label for="claudeConnection">Claude connection</label>
+      <select id="claudeConnection">
+        <option value="direct">Direct from the browser (API key below)</option>
+        <option value="helper">Local helper (API key in the macOS Keychain)</option>
+      </select>
+      <p class="hint">Use the local helper if your Anthropic organization doesn't allow requests from a browser, or to keep the key out of the browser. It needs a one-time install: see helper/README.md in the Precog repository.</p>
+    </div>
+
+    <div class="setting" id="anthropicKeySetting">
+      <label for="anthropicKey">Anthropic API key</label>
+      <input type="password" id="anthropicKey" autocomplete="off" spellcheck="false">
+      <p class="hint">From console.anthropic.com. Each task costs a small amount of API usage.</p>
+    </div>
+
+    <div class="setting">
+      <label for="quickTaskModel">Claude model</label>
+      <select id="quickTaskModel">
+        <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (faster)</option>
+        <option value="claude-opus-5-5">Claude Opus 5.5</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label for="quickTaskGuide">Task style guide (optional)</label>
+      <textarea id="quickTaskGuide" rows="10" placeholder="Describe how you like tasks written and filed: title style, which projects exist, and the IDs of any custom fields and options to set."></textarea>
+      <p class="hint">Claude follows this when drafting the task. To have a project or custom fields set, list the project names and the custom field and option IDs here.</p>
+    </div>
+
     <div class="actions">
       <button id="save">Save</button>
       <span id="status"></span>

@@ -104,6 +104,63 @@ window.__precogModules.asana = {
       };
     }
 
+    function findDescriptionEl() {
+      return document.querySelector('#TaskDescription .ProseMirror')
+        || document.querySelector('.ProsemirrorEditor.TextEditor3-prosemirrorEditor');
+    }
+
+    let toastTimer = null;
+    function showToast(message) {
+      let toast = document.getElementById('precog-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'precog-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('precog-toast-visible');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('precog-toast-visible'), 2000);
+    }
+
+    async function copyDescription() {
+      const el = findDescriptionEl();
+      if (!el) {
+        showToast('Open a task first');
+        return;
+      }
+      const description = prosemirrorToMarkdown(el).trim();
+      if (!description) {
+        showToast('This task has no description');
+        return;
+      }
+      const text = `${description}\n\n(asana task url: ${window.location.href})`;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Description copied');
+      } catch (err) {
+        // Async clipboard API can refuse when the page isn't focused; fall back
+        // to the legacy copy command
+        const active = document.activeElement;
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0;';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        if (active instanceof HTMLElement) active.focus();
+        if (!ok) console.error('[Precog] Clipboard write failed:', err);
+        showToast(ok ? 'Description copied' : 'Could not copy to the clipboard');
+      }
+    }
+
+    // Same Chrome command as Gmail's "copy thread link" (Ctrl+Cmd+C on Mac,
+    // Alt+Shift+C elsewhere), forwarded by the service worker
+    chrome.runtime.onMessage.addListener((message) => {
+      if (message.type === 'COPY_THREAD_LINK') copyDescription();
+    });
+
     initPrecog({
       source: 'asana',
       canActivate: () => !!document.querySelector('.ProsemirrorEditor.TextEditor3-prosemirrorEditor'),

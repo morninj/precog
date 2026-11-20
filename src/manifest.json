@@ -27,7 +27,7 @@
         "default": "Alt+Shift+C",
         "mac": "Command+MacCtrl+C"
       },
-      "description": "Copy Gmail thread link for Claude"
+      "description": "Copy Gmail thread link for Claude, or Asana task description"
     },
     "copy-window-urls": {
       "suggested_key": {

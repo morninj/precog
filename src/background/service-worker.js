@@ -179,6 +179,35 @@ async function copyWindowUrls(tab) {
   }
 }
 
+// Send a message to the tab's content script, injecting the scripts first if
+// none is listening. Chrome doesn't add content scripts to tabs that were
+// already open when the extension was installed, updated or reloaded, and the
+// old copies in those tabs can no longer receive messages, so without this a
+// shortcut silently does nothing until the page is refreshed.
+async function sendToContentScript(tab, message) {
+  // Older Chrome versions don't pass the tab to keyboard-command listeners
+  if (!tab) [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+
+  try {
+    await chrome.tabs.sendMessage(tab.id, message);
+    return;
+  } catch (e) {
+    if (!String(e?.message).includes('Receiving end does not exist')) return;
+  }
+
+  const [scripts] = chrome.runtime.getManifest().content_scripts;
+  try {
+    const target = { tabId: tab.id };
+    if (scripts.css?.length) await chrome.scripting.insertCSS({ target, files: scripts.css });
+    await chrome.scripting.executeScript({ target, files: scripts.js });
+    await chrome.tabs.sendMessage(tab.id, message);
+  } catch (e) {
+    // Chrome's own pages (new tab, settings, the Web Store) don't allow scripts
+    console.warn('[Precog] Could not reach the page for this shortcut:', e);
+  }
+}
+
 async function openSelectedLinksFromShortcut(tab) {
   // Older Chrome versions don't pass the tab to keyboard-command listeners
   if (!tab) [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -208,17 +237,9 @@ chrome.commands.onCommand.addListener((command, tab) => {
   } else if (command === 'open-links-tabs-new-window') {
     openSelectedLinksFromShortcut(tab);
   } else if (command === 'toggle-overlay') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: 'TOGGLE_OVERLAY' });
-      }
-    });
+    sendToContentScript(tab, { type: 'TOGGLE_OVERLAY' });
   } else if (command === 'copy-thread-link') {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: 'COPY_THREAD_LINK' });
-      }
-    });
+    sendToContentScript(tab, { type: 'COPY_THREAD_LINK' });
   }
 });
 

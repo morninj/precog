@@ -4,28 +4,67 @@ window.__precogModules.asana = {
   init: () => {
     function prosemirrorToMarkdown(el) {
       if (!el) return '';
-      const lines = [];
+      // Each block is a paragraph, heading or whole list; blocks are separated
+      // by a blank line. Asana's empty paragraphs (used for spacing) are dropped.
+      const blocks = [];
 
       for (const node of el.children) {
-        if (node.matches('p, .ProsemirrorEditor-paragraph')) {
-          const text = inlineToMarkdown(node).trim();
-          if (text) lines.push(text);
-          else lines.push('');
+        if (node.matches('header, h1, h2, h3, h4, h5, h6')) {
+          const level = parseInt(node.getAttribute('data-asana-level')
+            || node.tagName.match(/^H(\d)$/)?.[1] || '2', 10);
+          // Asana renders headings as bold text; the # already marks them
+          const text = inlineToMarkdown(node, { plain: true }).trim();
+          if (text) blocks.push(`${'#'.repeat(level)} ${text}`);
         } else if (node.matches('ol, ul, .ProsemirrorEditor-list')) {
-          for (const li of node.querySelectorAll('.ProsemirrorEditor-listItem')) {
-            const indent = parseInt(li.getAttribute('data-list-indent') || '1', 10);
-            const prefix = '  '.repeat(indent - 1) + '- ';
-            const p = li.querySelector('p');
-            const text = p ? inlineToMarkdown(p).trim() : li.textContent.trim();
-            lines.push(prefix + text);
-          }
+          blocks.push(listToMarkdown(node));
+        } else if (node.matches('blockquote')) {
+          const text = prosemirrorToMarkdown(node);
+          if (text) blocks.push(text.split('\n').map((l) => `> ${l}`.trimEnd()).join('\n'));
+        } else if (node.matches('pre')) {
+          blocks.push('```\n' + node.textContent.replace(/\n$/, '') + '\n```');
+        } else if (node.matches('hr')) {
+          blocks.push('---');
+        } else {
+          const text = inlineToMarkdown(node).trim();
+          if (text) blocks.push(text);
         }
       }
 
+      return blocks.join('\n\n');
+    }
+
+    // Asana lists are flat: nesting is in data-list-indent, and numbered vs.
+    // bulleted is per item in data-list-type.
+    function listToMarkdown(list) {
+      const lines = [];
+      const counters = [];
+      for (const li of list.querySelectorAll('.ProsemirrorEditor-listItem, li')) {
+        const indent = Math.max(1, parseInt(li.getAttribute('data-list-indent') || '1', 10));
+        counters.length = indent; // restart numbering below a shallower item
+        const numbered = (li.getAttribute('data-list-type') || (list.tagName === 'OL' ? 'numbered' : 'bulleted')) === 'numbered';
+        counters[indent - 1] = numbered ? (counters[indent - 1] || 0) + 1 : 0;
+        const marker = numbered ? `${counters[indent - 1]}.` : '-';
+        const p = li.querySelector('p');
+        const text = (p ? inlineToMarkdown(p) : li.textContent).trim();
+        lines.push(`${'   '.repeat(indent - 1)}${marker} ${text}`);
+      }
       return lines.join('\n');
     }
 
-    function inlineToMarkdown(el) {
+    const INLINE_MARKS = {
+      STRONG: '**', B: '**',
+      EM: '*', I: '*',
+      S: '~~', STRIKE: '~~', DEL: '~~',
+      CODE: '`',
+    };
+
+    // Markdown markers must hug the text, so keep surrounding spaces outside
+    function wrapMark(text, mark) {
+      const m = text.match(/^(\s*)([\s\S]*?)(\s*)$/);
+      return m[2] ? `${m[1]}${mark}${m[2]}${mark}${m[3]}` : text;
+    }
+
+    function inlineToMarkdown(el, { plain = false } = {}) {
       let result = '';
       for (const child of el.childNodes) {
         if (child.nodeType === Node.TEXT_NODE) {
@@ -37,8 +76,10 @@ window.__precogModules.asana = {
             result += `[${text}](${href})`;
           } else if (child.tagName === 'BR') {
             // skip trailing breaks
+          } else if (!plain && INLINE_MARKS[child.tagName]) {
+            result += wrapMark(inlineToMarkdown(child), INLINE_MARKS[child.tagName]);
           } else {
-            result += inlineToMarkdown(child);
+            result += inlineToMarkdown(child, { plain });
           }
         }
       }

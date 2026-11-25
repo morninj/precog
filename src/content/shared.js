@@ -401,10 +401,17 @@ function initPrecog(config) {
         details,
         // Optional { quote, quoteBy, links: [{ label, text, url }] } for the description
         extras: config.getTaskExtras?.() || null,
+        // Strings a task made from this page would contain, used to spot duplicates
+        matchKeys: config.getMatchKeys?.() || null,
       });
     });
     return true; // keep the channel open for the async response
   });
+
+  // Only Gmail threads get the bar; other pages are checked only on the shortcut
+  if (config.source === 'gmail' && config.getMatchKeys && window === window.top) {
+    initTaskBanner(config.source, config.getMatchKeys);
+  }
 
   return { showOverlay, hideOverlay };
 
@@ -509,4 +516,83 @@ function initPrecog(config) {
       }
     });
   }
+}
+
+// A small bar at the top of a Gmail thread when an Asana task already
+// mentions it. The service worker checks whether the user has it turned on.
+function initTaskBanner(source, getMatchKeys) {
+  let currentSig = null;
+  let dismissedSig = null;
+  let bar = null;
+
+  function render(tasks, sig) {
+    bar?.remove();
+    bar = null;
+    if (!tasks.length || sig === dismissedSig) return;
+
+    const open = tasks.filter((t) => !t.completed);
+    const first = open[0] || tasks[0];
+    const rest = (open.length || tasks.length) - 1;
+
+    bar = document.createElement('div');
+    bar.id = 'precog-task-banner';
+    if (!open.length) bar.classList.add('precog-task-banner-done');
+
+    const label = document.createElement('span');
+    label.textContent = open.length ? 'Asana task:' : 'Completed Asana task:';
+    const link = document.createElement('a');
+    link.href = first.permalink_url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = first.name;
+    bar.append(label, link);
+    if (rest > 0) {
+      const more = document.createElement('span');
+      more.className = 'precog-task-banner-more';
+      more.textContent = `+${rest} more`;
+      more.title = (open.length ? open : tasks).slice(1).map((t) => t.name).join('\n');
+      bar.append(more);
+    }
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.textContent = '×';
+    close.title = 'Hide';
+    close.addEventListener('click', () => {
+      dismissedSig = sig;
+      bar?.remove();
+      bar = null;
+    });
+    bar.append(close);
+    document.body.appendChild(bar);
+  }
+
+  async function refresh(force = false) {
+    let keys;
+    try {
+      keys = getMatchKeys() || [];
+    } catch {
+      keys = [];
+    }
+    const sig = keys.join('\n');
+    if (!force && sig === currentSig) return;
+    currentSig = sig;
+    if (!keys.length) return render([], sig);
+    let res;
+    try {
+      res = await chrome.runtime.sendMessage({ type: 'FIND_PAGE_TASKS', source, keys });
+    } catch {
+      // The extension was reloaded; this copy of the script is orphaned
+      clearInterval(timer);
+      return;
+    }
+    if (sig !== currentSig) return; // the page moved on while we waited
+    render(res?.tasks || [], sig);
+  }
+
+  // Cheap enough to poll, and catches navigation in single-page apps
+  const timer = setInterval(() => refresh(), 1000);
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'REFRESH_TASK_BANNER') refresh(true);
+  });
+  refresh();
 }

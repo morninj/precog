@@ -138,8 +138,10 @@ const QUICK_TASK_DEFAULTS = {
   asanaWorkspaceName: '',
   asanaSectionName: 'Triage',
   quickTaskGuide: '',
+  taskBanner: 'gmail',
 };
 
+const taskBannerEl = document.getElementById('taskBanner');
 const asanaTokenEl = document.getElementById('asanaToken');
 const anthropicKeyEl = document.getElementById('anthropicKey');
 const claudeConnectionEl = document.getElementById('claudeConnection');
@@ -177,6 +179,7 @@ chrome.storage.local.get(QUICK_TASK_DEFAULTS, (s) => {
   quickTaskModelEl.value = s.quickTaskModel;
   sectionNameEl.value = s.asanaSectionName;
   quickTaskGuideEl.value = s.quickTaskGuide;
+  taskBannerEl.value = s.taskBanner;
   setWorkspaceOptions(
     s.asanaWorkspaceGid ? [{ gid: s.asanaWorkspaceGid, name: s.asanaWorkspaceName || s.asanaWorkspaceGid }] : [],
     s.asanaWorkspaceGid
@@ -229,5 +232,6 @@ saveBtn.addEventListener('click', () => {
     asanaWorkspaceName: workspaceEl.selectedOptions[0]?.textContent || '',
     asanaSectionName: sectionNameEl.value.trim() || 'Triage',
     quickTaskGuide: quickTaskGuideEl.value,
+    taskBanner: taskBannerEl.value,
   });
 });

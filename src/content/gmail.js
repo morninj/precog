@@ -264,6 +264,16 @@ window.__precogModules.gmail = {
         const h2 = Array.from(document.querySelectorAll('h2[data-legacy-thread-id]')).find(isVisible);
         return h2 ? buildThreadLink(h2) : null;
       },
+      // A task for this thread may link to it by its hex ID (Precog's links) or
+      // by the token in Gmail's address bar (links copied from the URL)
+      getMatchKeys() {
+        const h2 = Array.from(document.querySelectorAll('h2[data-legacy-thread-id]')).find(isVisible);
+        if (!h2) return [];
+        const keys = [h2.getAttribute('data-legacy-thread-id')];
+        const token = window.location.hash.split('?')[0].split('/').pop();
+        if (/^[A-Za-z0-9]{20,}$/.test(token)) keys.push(token);
+        return keys.filter(Boolean);
+      },
       buildContext: buildEmailContext,
       availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
       defaultBlockIds: ['asana_task', 'summarize', 'identify_todos'],

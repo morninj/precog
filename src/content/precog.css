@@ -325,3 +325,59 @@
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+/* Bar shown when an Asana task already mentions this page */
+#precog-task-banner {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(640px, 90vw);
+  padding: 4px 6px 4px 14px;
+  border-radius: 0 0 8px 8px;
+  background: #1a1a2e;
+  color: #fff;
+  font: 500 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+#precog-task-banner.precog-task-banner-done {
+  background: #3a3a48;
+}
+
+#precog-task-banner span {
+  flex: none;
+  color: #b8bfd8;
+}
+
+#precog-task-banner a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #9db4ff;
+  text-decoration: underline;
+}
+
+#precog-task-banner .precog-task-banner-more {
+  cursor: default;
+}
+
+#precog-task-banner button {
+  flex: none;
+  margin: 0;
+  padding: 0 6px;
+  border: 0;
+  background: none;
+  color: #b8bfd8;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#precog-task-banner button:hover {
+  color: #fff;
+}

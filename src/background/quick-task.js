@@ -24,7 +24,16 @@ const QUICK_TASK_DEFAULTS = {
   asanaWorkspaceGid: '',
   asanaSectionName: 'Triage',
   quickTaskGuide: '',
+  taskBanner: 'gmail', // flag Gmail threads that already have a task: 'gmail' or 'off'
 };
+
+// How long a search for a page's existing tasks is reused
+const EXISTING_TASK_CACHE_MS = 5 * 60 * 1000;
+// Asana's search index lags behind new tasks, so remember ones made here
+const CREATED_TASK_MEMORY_MS = 30 * 60 * 1000;
+// Pressing the shortcut again this soon after a duplicate warning creates anyway
+const DUPLICATE_OVERRIDE_MS = 15 * 1000;
+const duplicateWarnings = new Map(); // tabId -> { sig, at }
 
 const TASK_SCHEMA = {
   type: 'object',
@@ -157,6 +166,123 @@ async function findProjectByName(token, workspaceGid, name) {
   );
   const wanted = name.trim().toLowerCase();
   return matches.find((p) => p.name.trim().toLowerCase() === wanted) || null;
+}
+
+// --- Existing tasks for a page ---
+// A page is identified by "match keys": strings that would appear in the
+// description of a task made from it (for a Gmail thread, its IDs; elsewhere,
+// the URL). Asana's search matches words loosely, so every hit is checked
+// for the exact key before it counts.
+
+// The keys for a task context, falling back to the page link
+function taskMatchKeys(context) {
+  const keys = (context.matchKeys || []).filter((k) => typeof k === 'string' && k.length >= 8);
+  if (keys.length) return [...new Set(keys)];
+  return context.url ? [context.url.replace(/#[^/]*$/, '')] : [];
+}
+
+function taskMentions(task, key) {
+  return (task.notes || '').includes(key) || (task.html_notes || '').includes(escapeHtml(key));
+}
+
+async function searchTasksMentioning(settings, key) {
+  const hits = await asanaRequest(
+    settings.asanaToken,
+    `/workspaces/${encodeURIComponent(settings.asanaWorkspaceGid)}/tasks/search` +
+      `?text=${encodeURIComponent(key)}&sort_by=modified_at&limit=50` +
+      '&opt_fields=name,notes,html_notes,completed,permalink_url'
+  );
+  return hits
+    .filter((t) => taskMentions(t, key))
+    .map(({ gid, name, completed, permalink_url }) => ({ gid, name, completed, permalink_url }));
+}
+
+// Tasks whose description mentions any of the keys, incomplete ones first.
+// Set fresh to skip cached searches (tasks created here are always included).
+async function findTasksMentioning(settings, keys, { fresh = false } = {}) {
+  const storeKeys = keys.flatMap((k) => [`search:${k}`, `created:${k}`]);
+  const stored = await chrome.storage.session.get(storeKeys);
+  const now = Date.now();
+  const found = new Map();
+
+  await Promise.all(
+    keys.map(async (key) => {
+      const cached = stored[`search:${key}`];
+      let tasks = cached?.tasks;
+      if (fresh || !cached || now - cached.at > EXISTING_TASK_CACHE_MS) {
+        tasks = await searchTasksMentioning(settings, key);
+        await chrome.storage.session.set({ [`search:${key}`]: { at: now, tasks } });
+      }
+      const created = (stored[`created:${key}`] || []).filter((t) => now - t.at < CREATED_TASK_MEMORY_MS);
+      for (const t of [...created, ...tasks]) if (!found.has(t.gid)) found.set(t.gid, t);
+    })
+  );
+  return [...found.values()].sort((a, b) => a.completed - b.completed);
+}
+
+async function rememberCreatedTask(keys, task) {
+  const entry = { gid: task.gid, name: task.name, completed: false, permalink_url: task.permalink_url, at: Date.now() };
+  const stored = await chrome.storage.session.get(keys.map((k) => `created:${k}`));
+  const updates = {};
+  for (const key of keys) updates[`created:${key}`] = [entry, ...(stored[`created:${key}`] || [])];
+  await chrome.storage.session.set(updates);
+}
+
+async function asanaReady(settings) {
+  return !!(
+    settings.asanaToken &&
+    settings.asanaWorkspaceGid &&
+    (await chrome.permissions.contains({ origins: [ASANA_ORIGIN] }))
+  );
+}
+
+// For the in-page bar: { tasks } for this Gmail thread, or { tasks: [] } when
+// the bar is off or Asana isn't set up. Other pages are only ever looked up
+// when the user presses the shortcut, so their URLs aren't sent on every visit.
+async function findTasksForPage({ source, keys }) {
+  const settings = await chrome.storage.local.get(QUICK_TASK_DEFAULTS);
+  const allowed = settings.taskBanner === 'gmail' && source === 'gmail';
+  const validKeys = (keys || []).filter((k) => typeof k === 'string' && k.length >= 8);
+  if (!allowed || !validKeys.length || !(await asanaReady(settings))) return { tasks: [] };
+  try {
+    return { tasks: await findTasksMentioning(settings, validKeys) };
+  } catch (e) {
+    console.warn('[Precog] Could not look up existing Asana tasks:', e);
+    return { tasks: [] };
+  }
+}
+
+function refreshTaskBanner(tabId) {
+  chrome.tabs.sendMessage(tabId, { type: 'REFRESH_TASK_BANNER' }).catch(() => {});
+}
+
+// False (after warning the user) if an open task already covers this page,
+// unless they pressed the shortcut again right after that warning
+async function checkForExistingTask(tab, settings, keys) {
+  const sig = keys.join('\n');
+  const warned = duplicateWarnings.get(tab.id);
+  duplicateWarnings.delete(tab.id);
+  if (warned && warned.sig === sig && Date.now() - warned.at < DUPLICATE_OVERRIDE_MS) return true;
+
+  let tasks;
+  try {
+    tasks = await findTasksMentioning(settings, keys, { fresh: true });
+  } catch (e) {
+    // Search needs a paid Asana plan; without it, just create the task
+    console.warn('[Precog] Could not check for an existing Asana task:', e);
+    return true;
+  }
+  const open = tasks.filter((t) => !t.completed);
+  if (!open.length) return true;
+
+  duplicateWarnings.set(tab.id, { sig, at: Date.now() });
+  const more = open.length > 1 ? ` (and ${open.length - 1} more)` : '';
+  await quickTaskToast(
+    tab.id,
+    `Asana task already exists: “${open[0].name}”${more}. Press the shortcut again to create another.`,
+    { linkUrl: open[0].permalink_url }
+  );
+  return false;
 }
 
 function buildSystemPrompt(settings, maxTitleWords, today) {
@@ -432,6 +558,12 @@ async function createQuickAsanaTask(tab) {
   }
   if (context.cancelled) return; // the user backed out at a page warning
 
+  const matchKeys = taskMatchKeys(context);
+  if (matchKeys.length) {
+    await quickTaskToast(tab.id, 'Checking Asana for an existing task…', { sticky: true });
+    if (!(await checkForExistingTask(tab, settings, matchKeys))) return;
+  }
+
   await quickTaskToast(tab.id, 'Creating Asana task…', { sticky: true });
   try {
     const { maxTitleWords } = await chrome.storage.sync.get({ maxTitleWords: '10' });
@@ -461,6 +593,10 @@ async function createQuickAsanaTask(tab) {
     if (draft.project && !project) caveats.push(`no project named “${draft.project}”`);
     if (dropped.length) caveats.push(`Asana rejected the ${dropped.join(', ')}`);
     if (reason) console.warn('[Precog] Asana rejected part of the task:', reason);
+    if (matchKeys.length) {
+      await rememberCreatedTask(matchKeys, task);
+      refreshTaskBanner(tab.id);
+    }
 
     const message = caveats.length
       ? `Created “${task.name}” (${caveats.join('; ')})`

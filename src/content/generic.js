@@ -56,6 +56,8 @@ window.__precogModules.generic = {
         capturedBodyText = capturedSelection ? '' : document.body.innerText || '';
         return extractPageData();
       },
+      // Drop a plain #fragment, but keep hash routes like #/inbox
+      getMatchKeys: () => [window.location.href.replace(/#[^/]*$/, '')],
       buildContext: buildPageContext,
       availableBlockIds: ['asana_task', 'summarize', 'identify_todos', 'deep_context', 'draft_reply', 'deep_research'],
       defaultBlockIds: ['summarize', 'identify_todos'],

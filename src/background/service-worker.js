@@ -244,6 +244,12 @@ chrome.commands.onCommand.addListener((command, tab) => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  // The in-page bar asking whether this page already has an Asana task
+  if (message.type === 'FIND_PAGE_TASKS') {
+    findTasksForPage(message).then(sendResponse);
+    return true;
+  }
+
   if (message.type === 'SEND_TO_CLAUDE') {
     pendingPayload = message.payload;
     chrome.tabs.create({ url: 'https://claude.ai/new' });

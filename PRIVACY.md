@@ -12,7 +12,7 @@ Content scripts run on all http and https pages to enable the keyboard shortcut 
 
 ## Where your data goes
 
-Page content is sent to Claude (claude.ai) when you choose to send a prompt. If you set up the optional quick Asana task feature, then each time you press its shortcut, the current page's content is sent to the Anthropic API (to draft the task) using your own API key, either directly or through the optional local helper described below, and the drafted task (title, a one-line summary, and the page link) is sent to the Asana API using your own access token. Precog does not send data anywhere else. There are no analytics, telemetry, or Precog servers.
+Page content is sent to Claude (claude.ai) when you choose to send a prompt. If you set up the optional quick Asana task feature, then each time you press its shortcut, the current page's content is sent to the Anthropic API (to draft the task) using your own API key, either directly or through the optional local helper described below, and the drafted task (title, a one-line summary, and the page link) is sent to the Asana API using your own access token. Before creating the task, Precog searches your Asana workspace for an existing task that mentions the page (its link, or for a Gmail thread its thread IDs) so it can warn you about duplicates. Unless you turn it off, Precog also runs that search when you open a Gmail thread, to show a bar linking to any existing task. The addresses of other pages are sent to Asana only when you press the shortcut. Precog does not send data anywhere else. There are no analytics, telemetry, or Precog servers.
 
 ## What Precog stores
 
@@ -29,7 +29,7 @@ Precog stores user preferences (email data scope, Asana task title length, page 
 
 ## Host permissions
 
-Content scripts match all http and https URLs so the extension can be activated on any page. On claude.ai, a separate content script delivers the assembled prompt. No data is accessed until the user explicitly triggers the extension. Access to app.asana.com and api.anthropic.com is optional and is requested only when you set up the quick Asana task feature; it is used solely to call those two APIs.
+Content scripts match all http and https URLs so the extension can be activated on any page. On claude.ai, a separate content script delivers the assembled prompt. No data is accessed until the user explicitly triggers the extension, except that once you have set up quick Asana tasks, the page identifiers described above are looked up in Asana to show the existing-task bar (Gmail threads only; this can be turned off). Access to app.asana.com and api.anthropic.com is optional and is requested only when you set up the quick Asana task feature; it is used solely to call those two APIs.
 
 ## Open source
 

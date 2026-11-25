@@ -59,6 +59,15 @@
     </div>
 
     <div class="setting">
+      <label for="taskBanner">Show when a Gmail thread already has a task</label>
+      <select id="taskBanner">
+        <option value="gmail">On</option>
+        <option value="off">Off</option>
+      </select>
+      <p class="hint">Shows a bar at the top of a Gmail thread linking to any Asana task whose description mentions it. Looking this up sends the thread's ID to Asana's search. Needs a paid Asana plan. On every page, the shortcut checks for an existing task before creating one and warns you if it finds one; press it again to create another anyway. Other pages' addresses are sent to Asana only then.</p>
+    </div>
+
+    <div class="setting">
       <label for="claudeConnection">Claude connection</label>
       <select id="claudeConnection">
         <option value="direct">Direct from the browser (API key below)</option>
